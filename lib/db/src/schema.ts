@@ -483,7 +483,7 @@ export const communicationsTable = pgTable("communications", {
   cible: text("cible").default("tous"), // tous | actifs | defaillants | honneur | selection
   destinataireIds: jsonb("destinataire_ids").$type<number[]>().default([]),
   nombreDestinataires: integer("nombre_destinataires").default(0),
-  statut: text("statut").default("envoye"), // envoye | echec | en_attente_config
+  statut: text("statut").default("envoye"), // envoye | partiel | echec | en_attente_config
   createdById: integer("created_by_id"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });

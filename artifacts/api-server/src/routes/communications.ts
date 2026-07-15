@@ -76,9 +76,13 @@ router.post("/communications", requireAuth, async (req, res): Promise<void> => {
   res.status(201).json({
     ...c,
     avertissement: statut === "en_attente_config"
-      ? `Le journal a bien été enregistré, mais la configuration SMTP est incomplète. Le message n'a pas été délivré.`
+      ? d.canal === "email"
+        ? "Configuration SMTP incomplète. Vérifiez SMTP_HOST, SMTP_USER et SMTP_PASS dans les secrets."
+        : d.canal === "sms"
+        ? "Aucune clé SMS configurée (SMS_API_KEY). Le journal est enregistré mais le message n'a pas été envoyé."
+        : "Aucune clé WhatsApp configurée (WHATSAPP_API_TOKEN). Le journal est enregistré mais le message n'a pas été envoyé."
       : statut === "partiel"
-      ? `Envoi partiel : certains destinataires n'ont pas reçu le message.`
+      ? "Envoi partiel : certains destinataires n'ont pas reçu le message (vérifiez les adresses email)."
       : undefined,
   });
 });
