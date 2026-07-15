@@ -35,7 +35,7 @@ export const CreateMembreBody = z.object({
   dateAdhesion: optionalDate,
   typeCdi: z.enum(["ancien", "nouveau"]).optional(),
   statut: z.enum(["actif", "defaillant", "radie", "demissionnaire", "decede", "honneur"]).optional(),
-  typeAdhesion: z.enum(["ordinaire", "exceptionnel"]).optional(),
+  typeAdhesion: z.enum(["ordinaire", "exceptionnel", "non_national"]).optional(),
   situationFamiliale: z.string().optional(),
   departement: z.string().optional(),
   service: z.string().optional(),
