@@ -5,6 +5,8 @@ import { CreateCommunicationBody } from "@workspace/api-zod";
 import { requireAuth } from "../lib/auth";
 import type { JwtPayload } from "../lib/auth";
 import { sendMail, isMailConfigured } from "../lib/mailer";
+import { sendSms, isSmsConfigured } from "../lib/sms";
+import { sendWhatsapp, isWhatsappConfigured } from "../lib/whatsapp";
 
 const router: IRouter = Router();
 
@@ -14,9 +16,6 @@ async function envoyerMessage(
   sujet: string | undefined,
   message: string
 ): Promise<"envoye" | "partiel" | "en_attente_config"> {
-  if (canal === "sms" && !process.env.SMS_API_KEY) return "en_attente_config";
-  if (canal === "whatsapp" && !process.env.WHATSAPP_API_TOKEN) return "en_attente_config";
-
   if (canal === "email") {
     if (!isMailConfigured()) return "en_attente_config";
     let envoyeCount = 0;
@@ -39,6 +38,18 @@ async function envoyerMessage(
       if (ok) envoyeCount++;
     }
     return envoyeCount === destinataires.length ? "envoye" : envoyeCount > 0 ? "partiel" : "en_attente_config";
+  }
+
+  if (canal === "sms") {
+    if (!isSmsConfigured()) return "en_attente_config";
+    const ok = await sendSms(destinataires, message);
+    return ok ? "envoye" : "en_attente_config";
+  }
+
+  if (canal === "whatsapp") {
+    if (!isWhatsappConfigured()) return "en_attente_config";
+    const ok = await sendWhatsapp(destinataires, message);
+    return ok ? "envoye" : "en_attente_config";
   }
 
   return "envoye";
