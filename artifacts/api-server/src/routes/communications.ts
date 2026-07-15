@@ -1,26 +1,46 @@
 import { Router, type IRouter } from "express";
 import { db, communicationsTable, membresTable } from "@workspace/db";
-import { desc, inArray, eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { CreateCommunicationBody } from "@workspace/api-zod";
 import { requireAuth } from "../lib/auth";
 import type { JwtPayload } from "../lib/auth";
+import { sendMail, isMailConfigured } from "../lib/mailer";
 
 const router: IRouter = Router();
 
-/**
- * Envoi effectif du message. Aucune clé d'API tierce (Twilio, WhatsApp Business API,
- * fournisseur SMS local, SMTP...) n'était fournie dans le projet d'origine : cette
- * fonction journalise l'envoi et renvoie "en_attente_config" tant qu'un vrai
- * connecteur n'est pas branché ici (voir README.md, section Communication).
- */
-async function envoyerMessage(_canal: string, _destinataires: string[], _sujet: string | undefined, _message: string): Promise<"envoye" | "en_attente_config"> {
-  const hasSmsConfig = !!process.env.SMS_API_KEY;
-  const hasWhatsappConfig = !!process.env.WHATSAPP_API_TOKEN;
-  const hasEmailConfig = !!process.env.SMTP_HOST;
-  if (_canal === "sms" && !hasSmsConfig) return "en_attente_config";
-  if (_canal === "whatsapp" && !hasWhatsappConfig) return "en_attente_config";
-  if (_canal === "email" && !hasEmailConfig) return "en_attente_config";
-  // TODO brancher ici l'appel réel au fournisseur (voir README).
+async function envoyerMessage(
+  canal: string,
+  destinataires: string[],
+  sujet: string | undefined,
+  message: string
+): Promise<"envoye" | "partiel" | "en_attente_config"> {
+  if (canal === "sms" && !process.env.SMS_API_KEY) return "en_attente_config";
+  if (canal === "whatsapp" && !process.env.WHATSAPP_API_TOKEN) return "en_attente_config";
+
+  if (canal === "email") {
+    if (!isMailConfigured()) return "en_attente_config";
+    let envoyeCount = 0;
+    for (const to of destinataires) {
+      const ok = await sendMail({
+        to,
+        subject: sujet ?? "Message de MUGETRA-NPG.CI",
+        html: `<div style="font-family:sans-serif;max-width:600px;margin:auto">
+          <div style="background:#1a5c3a;padding:20px;border-radius:8px 8px 0 0">
+            <h2 style="color:#fff;margin:0">MUGETRA-NPG.CI</h2>
+            <p style="color:#c9a227;margin:4px 0 0">Portail Mutualiste</p>
+          </div>
+          <div style="background:#fff;padding:24px;border:1px solid #e5e7eb;border-radius:0 0 8px 8px">
+            <div style="white-space:pre-line">${message}</div>
+            <hr style="margin:24px 0;border:none;border-top:1px solid #e5e7eb"/>
+            <p style="font-size:12px;color:#6b7280;margin:0">MUGETRA-NPG.CI — Portail Mutualiste</p>
+          </div>
+        </div>`,
+      });
+      if (ok) envoyeCount++;
+    }
+    return envoyeCount === destinataires.length ? "envoye" : envoyeCount > 0 ? "partiel" : "en_attente_config";
+  }
+
   return "envoye";
 }
 
@@ -56,7 +76,9 @@ router.post("/communications", requireAuth, async (req, res): Promise<void> => {
   res.status(201).json({
     ...c,
     avertissement: statut === "en_attente_config"
-      ? `Le journal a bien été enregistré, mais aucune clé d'API n'est configurée pour le canal "${d.canal}". Le message n'a pas réellement été délivré (voir README.md).`
+      ? `Le journal a bien été enregistré, mais la configuration SMTP est incomplète. Le message n'a pas été délivré.`
+      : statut === "partiel"
+      ? `Envoi partiel : certains destinataires n'ont pas reçu le message.`
       : undefined,
   });
 });

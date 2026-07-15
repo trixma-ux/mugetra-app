@@ -2,7 +2,7 @@ import { Router, type IRouter } from "express";
 import { db, membresTable, personnesDeclareeesTable, cotisationsTable, usersTable, parametresTable, mouvementsEffectifsTable } from "@workspace/db";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
-import nodemailer from "nodemailer";
+import { sendMail } from "../lib/mailer";
 import { eq, or, ilike, and, sql, desc, ne, isNull } from "drizzle-orm";
 import {
   CreateMembreBody, UpdateMembreBody, UpdateMembreStatutBody,
@@ -249,36 +249,26 @@ router.post("/membres/:id/reset-acces", requireAuth, async (req, res): Promise<v
   await db.update(usersTable).set({ motDePasse: hash }).where(eq(usersTable.membreId, id));
 
   let emailSent = false;
-  if (process.env.SMTP_HOST && m.email) {
-    try {
-      const transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port: parseInt(process.env.SMTP_PORT ?? "587"),
-        secure: process.env.SMTP_SECURE === "true",
-        auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
-      });
-      await transporter.sendMail({
-        from: `"MUGETRA-NPG.CI" <${process.env.SMTP_USER}>`,
-        to: m.email,
-        subject: "Réinitialisation de votre mot de passe — MUGETRA-NPG.CI",
-        html: `<div style="font-family:sans-serif;max-width:500px;margin:auto">
-          <div style="background:#1a5c3a;padding:20px;border-radius:8px 8px 0 0">
-            <h2 style="color:#fff;margin:0">MUGETRA-NPG.CI</h2>
-            <p style="color:#c9a227;margin:4px 0 0">Portail Mutualiste</p>
+  if (m.email) {
+    emailSent = await sendMail({
+      to: m.email,
+      subject: "Réinitialisation de votre mot de passe — MUGETRA-NPG.CI",
+      html: `<div style="font-family:sans-serif;max-width:500px;margin:auto">
+        <div style="background:#1a5c3a;padding:20px;border-radius:8px 8px 0 0">
+          <h2 style="color:#fff;margin:0">MUGETRA-NPG.CI</h2>
+          <p style="color:#c9a227;margin:4px 0 0">Portail Mutualiste</p>
+        </div>
+        <div style="background:#fff;padding:24px;border:1px solid #e5e7eb;border-radius:0 0 8px 8px">
+          <p>Bonjour <strong>${m.prenom} ${m.nom}</strong>,</p>
+          <p>Votre mot de passe a été réinitialisé par l'administration.</p>
+          <div style="background:#f0faf4;border:1px solid #1a5c3a33;border-radius:6px;padding:16px;margin:16px 0">
+            <p style="margin:0 0 8px"><strong>Identifiant :</strong> ${m.matricule}</p>
+            <p style="margin:0"><strong>Nouveau mot de passe :</strong> <code style="background:#e5e7eb;padding:2px 6px;border-radius:4px;font-size:16px">${password}</code></p>
           </div>
-          <div style="background:#fff;padding:24px;border:1px solid #e5e7eb;border-radius:0 0 8px 8px">
-            <p>Bonjour <strong>${m.prenom} ${m.nom}</strong>,</p>
-            <p>Votre mot de passe a été réinitialisé par l'administration.</p>
-            <div style="background:#f0faf4;border:1px solid #1a5c3a33;border-radius:6px;padding:16px;margin:16px 0">
-              <p style="margin:0 0 8px"><strong>Identifiant :</strong> ${m.matricule}</p>
-              <p style="margin:0"><strong>Nouveau mot de passe :</strong> <code style="background:#e5e7eb;padding:2px 6px;border-radius:4px;font-size:16px">${password}</code></p>
-            </div>
-            <p style="font-size:12px;color:#6b7280">Veuillez conserver ces informations en lieu sûr. Cordialement,<br/>MUGETRA-NPG.CI</p>
-          </div>
-        </div>`,
-      });
-      emailSent = true;
-    } catch {}
+          <p style="font-size:12px;color:#6b7280">Veuillez conserver ces informations en lieu sûr. Cordialement,<br/>MUGETRA-NPG.CI</p>
+        </div>
+      </div>`,
+    });
   }
 
   res.json({ success: true, identifiant: m.matricule, motDePasse: password, emailSent,
@@ -325,36 +315,26 @@ router.post("/membres/:id/autoriser-acces", requireAuth, async (req, res): Promi
   });
 
   let emailSent = false;
-  if (process.env.SMTP_HOST && m.email) {
-    try {
-      const transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port: parseInt(process.env.SMTP_PORT ?? "587"),
-        secure: process.env.SMTP_SECURE === "true",
-        auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
-      });
-      await transporter.sendMail({
-        from: `"MUGETRA-NPG.CI" <${process.env.SMTP_USER}>`,
-        to: m.email,
-        subject: "Vos accès au Portail Mutualiste MUGETRA-NPG.CI",
-        html: `<div style="font-family:sans-serif;max-width:500px;margin:auto">
-          <div style="background:#1a5c3a;padding:20px;border-radius:8px 8px 0 0">
-            <h2 style="color:#fff;margin:0">MUGETRA-NPG.CI</h2>
-            <p style="color:#c9a227;margin:4px 0 0">Portail Mutualiste</p>
+  if (m.email) {
+    emailSent = await sendMail({
+      to: m.email,
+      subject: "Vos accès au Portail Mutualiste MUGETRA-NPG.CI",
+      html: `<div style="font-family:sans-serif;max-width:500px;margin:auto">
+        <div style="background:#1a5c3a;padding:20px;border-radius:8px 8px 0 0">
+          <h2 style="color:#fff;margin:0">MUGETRA-NPG.CI</h2>
+          <p style="color:#c9a227;margin:4px 0 0">Portail Mutualiste</p>
+        </div>
+        <div style="background:#fff;padding:24px;border:1px solid #e5e7eb;border-radius:0 0 8px 8px">
+          <p>Bonjour <strong>${m.prenom} ${m.nom}</strong>,</p>
+          <p>Votre accès au portail mutualiste a été activé par l'administration.</p>
+          <div style="background:#f0faf4;border:1px solid #1a5c3a33;border-radius:6px;padding:16px;margin:16px 0">
+            <p style="margin:0 0 8px"><strong>Identifiant :</strong> ${m.matricule}</p>
+            <p style="margin:0"><strong>Mot de passe :</strong> <code style="background:#e5e7eb;padding:2px 6px;border-radius:4px;font-size:16px">${password}</code></p>
           </div>
-          <div style="background:#fff;padding:24px;border:1px solid #e5e7eb;border-radius:0 0 8px 8px">
-            <p>Bonjour <strong>${m.prenom} ${m.nom}</strong>,</p>
-            <p>Votre accès au portail mutualiste a été activé par l'administration.</p>
-            <div style="background:#f0faf4;border:1px solid #1a5c3a33;border-radius:6px;padding:16px;margin:16px 0">
-              <p style="margin:0 0 8px"><strong>Identifiant :</strong> ${m.matricule}</p>
-              <p style="margin:0"><strong>Mot de passe :</strong> <code style="background:#e5e7eb;padding:2px 6px;border-radius:4px;font-size:16px">${password}</code></p>
-            </div>
-            <p style="font-size:12px;color:#6b7280">Veuillez conserver ces informations en lieu sûr. Cordialement,<br/>MUGETRA-NPG.CI</p>
-          </div>
-        </div>`,
-      });
-      emailSent = true;
-    } catch {}
+          <p style="font-size:12px;color:#6b7280">Veuillez conserver ces informations en lieu sûr. Cordialement,<br/>MUGETRA-NPG.CI</p>
+        </div>
+      </div>`,
+    });
   }
 
   res.json({ success: true, identifiant: m.matricule, motDePasse: password, email, emailSent,
