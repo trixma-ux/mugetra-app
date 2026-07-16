@@ -42,14 +42,20 @@ export default function NouveauMembre() {
   });
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
-    createMutation.mutate({ data: values }, {
+    // Nettoyer les champs vides → undefined pour éviter les erreurs de validation backend
+    const payload: Record<string, any> = {};
+    for (const [k, v] of Object.entries(values)) {
+      if (v !== "" && v !== null && v !== undefined) payload[k] = v;
+    }
+    createMutation.mutate(payload, {
       onSuccess: () => {
         toast({ title: "Membre créé", description: "Le membre a été ajouté avec succès." });
         queryClient.invalidateQueries({ queryKey: getListMembresQueryKey() });
         setLocation("/membres");
       },
-      onError: () => {
-        toast({ title: "Erreur", description: "Une erreur est survenue.", variant: "destructive" });
+      onError: (err: any) => {
+        const msg = err?.response?.data?.error ?? err?.message ?? "Une erreur est survenue.";
+        toast({ title: "Erreur", description: msg, variant: "destructive" });
       }
     });
   };
