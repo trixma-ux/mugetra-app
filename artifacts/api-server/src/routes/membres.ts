@@ -67,14 +67,9 @@ router.post("/membres", requireAuth, async (req, res): Promise<void> => {
   }
   const { conjoint, enfants, parents, beauxParents, ...membreData } = parsed.data as any;
 
-  // Auto-génération du matricule si non fourni
   if (!membreData.matricule) {
-    const [last] = await db.select({ matricule: membresTable.matricule })
-      .from(membresTable)
-      .orderBy(desc(membresTable.id))
-      .limit(1);
-    const lastNum = last ? parseInt(last.matricule.replace(/\D/g, "") || "0") : 0;
-    membreData.matricule = `MG-${String(lastNum + 1).padStart(4, "0")}`;
+    res.status(400).json({ error: "Le matricule est obligatoire." });
+    return;
   }
 
   const [membre] = await db.insert(membresTable).values({ ...membreData, dateAdhesion: membreData.dateAdhesion ?? new Date().toISOString().slice(0, 10) }).returning();

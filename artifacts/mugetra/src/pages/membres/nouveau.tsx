@@ -13,6 +13,7 @@ import { ArrowLeft } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 
 const formSchema = z.object({
+  matricule: z.string().min(1, "Requis"),
   nom: z.string().min(1, "Requis"),
   prenom: z.string().min(1, "Requis"),
   email: z.string().email("Invalide").optional().or(z.literal("")),
@@ -30,6 +31,7 @@ export default function NouveauMembre() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      matricule: "",
       nom: "",
       prenom: "",
       email: "",
@@ -72,6 +74,13 @@ export default function NouveauMembre() {
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
+                <FormField control={form.control} name="matricule" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Matricule</FormLabel>
+                    <FormControl><Input placeholder="ex: MG-0001" {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
                 <FormField control={form.control} name="typeAdhesion" render={({ field }) => (
                   <FormItem>
                     <FormLabel>Type d'adhésion</FormLabel>
