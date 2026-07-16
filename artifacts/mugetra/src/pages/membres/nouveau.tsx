@@ -13,7 +13,7 @@ import { ArrowLeft } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 
 const formSchema = z.object({
-  matricule: z.string().min(1, "Requis"),
+  matricule: z.string().min(1, "Requis").regex(/^[a-zA-Z0-9]+$/, "Lettres et chiffres uniquement (ex: 001 ou MG001)"),
   nom: z.string().min(1, "Requis"),
   prenom: z.string().min(1, "Requis"),
   email: z.string().email("Invalide").optional().or(z.literal("")),

@@ -22,7 +22,7 @@ const PersonneDeclareeInput = z.object({
 });
 
 export const CreateMembreBody = z.object({
-  matricule: z.string().optional(),
+  matricule: z.string().min(1).regex(/^[a-zA-Z0-9]+$/).optional(),
   nom: z.string().min(1),
   prenom: z.string().min(1),
   email: z.string().email().optional().nullable(),
