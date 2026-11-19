@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { formatFCFA } from "@/lib/format";
 import { useToast } from "@/hooks/use-toast";
+import { API_ORIGIN } from "@/lib/config";
 
 export default function RetraiteComplementairePage() {
   const { toast } = useToast();
@@ -26,7 +27,7 @@ export default function RetraiteComplementairePage() {
     [["/retraite-complementaire", membreId]],
   );
   const simulerRachat = useApiMutation(async () => {
-    const r = await fetch(`/api/retraite-complementaire/rachat-partiel`, {
+    const r = await fetch(`${API_ORIGIN}/api/retraite-complementaire/rachat-partiel`, {
       method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${localStorage.getItem("mugetra_token")}` },
       body: JSON.stringify({ membreId: Number(membreId), montant: Number(rachat) }),
     });

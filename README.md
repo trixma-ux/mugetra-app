@@ -176,3 +176,26 @@ mise en production.
   `app/(tabs)/assistances.tsx`.
 - **Signature électronique** des documents (mentionnée au cahier des charges) : le champ existe
   en base (`documents.signeElectroniquement`) mais aucun fournisseur de signature n'est branché.
+
+---
+
+## 8. Déploiement du frontend web (GitHub Pages)
+
+Le workflow `.github/workflows/deploy-web.yml` construit `artifacts/mugetra` à chaque push sur
+`main` et publie `artifacts/mugetra/dist/public` sur la branche `gh-pages`
+(`peaceiris/actions-gh-pages`). Site : https://trixma-ux.github.io/mugetra-app/
+(nécessite *Settings → Pages → Deploy from a branch → `gh-pages` / root*).
+
+Variables de build du frontend :
+
+| Variable | Rôle |
+|---|---|
+| `BASE_PATH` | Chemin de base Vite (`/mugetra-app/` sur GitHub Pages, `/` en local). Obligatoire. |
+| `PORT` | Port du serveur Vite (requis par `vite.config.ts`, même pour le build). |
+| `VITE_API_URL` | URL publique de l'api-server, ex. `https://api.exemple.ci` (le suffixe `/api` est facultatif). Vide en développement (proxy Vite). En CI, elle est lue depuis la *variable de dépôt* `VITE_API_URL` (Settings → Secrets and variables → Actions → Variables). |
+
+GitHub Pages n'héberge que le frontend statique. Sans `VITE_API_URL`, ou si l'API est
+injoignable, l'application affiche un bandeau « serveur non configuré / indisponible » au lieu
+d'échouer silencieusement. L'api-server (Express + PostgreSQL) doit être hébergé séparément
+(variables : voir `artifacts/api-server/.env.example`) ; il accepte déjà les requêtes
+cross-origin (`cors()`) et l'authentification par en-tête `Authorization: Bearer`.

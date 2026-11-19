@@ -39,6 +39,9 @@ jobs:
           PORT: '3000'
           BASE_PATH: /mugetra-app/
           NODE_ENV: production
+          # Public URL of the api-server (repo variable). Empty = the site shows a
+          # "server not configured" banner instead of failing silently.
+          VITE_API_URL: ${{ vars.VITE_API_URL }}
         run: pnpm --filter @workspace/mugetra run build
 
       - name: Prepare SPA fallback
