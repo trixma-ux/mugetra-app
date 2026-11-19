@@ -13,13 +13,13 @@ import { ArrowLeft } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 
 const formSchema = z.object({
-  matricule: z.string().min(1, "Requis").regex(/^[a-zA-Z0-9]+$/, "Lettres et chiffres uniquement (ex: 001 ou MG001)"),
-  nom: z.string().min(1, "Requis"),
-  prenom: z.string().min(1, "Requis"),
-  email: z.string().email("Invalide").optional().or(z.literal("")),
+  matricule: z.string().min(1, "Champ requis").regex(/^[a-zA-Z0-9]+$/, "Lettres et chiffres uniquement (ex: 001 ou MG001)"),
+  nom: z.string().min(1, "Champ requis"),
+  prenom: z.string().min(1, "Champ requis"),
+  email: z.string().email("Adresse email invalide").optional().or(z.literal("")),
   telephone: z.string().optional().or(z.literal("")),
   typeAdhesion: z.enum(["ordinaire", "exceptionnel", "non_national"]),
-  dateAdhesion: z.string().min(1, "Requis"),
+  dateAdhesion: z.string().min(1, "Champ requis"),
 });
 
 export default function NouveauMembre() {

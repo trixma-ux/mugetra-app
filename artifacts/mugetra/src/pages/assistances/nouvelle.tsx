@@ -38,9 +38,9 @@ const LIEN_OPTIONS = [
 const NEEDS_BENEFICIAIRE = ["deces_conjoint","deces_enfant","deces_parent","deces_beau_parent","deces_mort_ne"];
 
 const formSchema = z.object({
-  membreId: z.coerce.number().min(1, "Membre requis"),
-  type: z.string().min(1, "Type requis"),
-  dateEvenement: z.string().min(1, "Requis"),
+  membreId: z.coerce.number().min(1, "Champ requis"),
+  type: z.string().min(1, "Champ requis"),
+  dateEvenement: z.string().min(1, "Champ requis"),
   beneficiaireNom: z.string().optional(),
   beneficiairePrenom: z.string().optional(),
   beneficiaireRelation: z.string().optional(),

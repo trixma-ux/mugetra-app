@@ -36,8 +36,8 @@ const LIEN_OPTIONS = [
 ];
 
 const formSchema = z.object({
-  type: z.string().min(1, "Type requis"),
-  dateEvenement: z.string().min(1, "Date requise"),
+  type: z.string().min(1, "Champ requis"),
+  dateEvenement: z.string().min(1, "Champ requis"),
   beneficiaireNom: z.string().optional(),
   beneficiairePrenom: z.string().optional(),
   beneficiaireRelation: z.string().optional(),

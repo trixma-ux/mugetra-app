@@ -12,12 +12,12 @@ import { useToast } from "@/hooks/use-toast";
 import { API_ORIGIN, publicAsset } from "@/lib/config";
 
 const adminSchema = z.object({
-  identifiant: z.string().email({ message: "Email invalide" }),
-  motDePasse: z.string().min(1, { message: "Mot de passe requis" }),
+  identifiant: z.string().min(1, { message: "Champ requis" }).email({ message: "Adresse email invalide" }),
+  motDePasse: z.string().min(1, { message: "Champ requis" }),
 });
 const mutualisteSchema = z.object({
-  identifiant: z.string().min(1, { message: "Matricule requis" }),
-  motDePasse: z.string().min(1, { message: "Mot de passe requis" }),
+  identifiant: z.string().min(1, { message: "Champ requis" }),
+  motDePasse: z.string().min(1, { message: "Champ requis" }),
 });
 
 async function loginCall(identifiant: string, motDePasse: string) {
@@ -90,7 +90,7 @@ export default function Login() {
         </div>
         <div className="relative z-10">
           <div className="h-px w-full mb-4" style={{ background: "linear-gradient(to right, transparent, rgba(255,255,255,0.3), transparent)" }} />
-          <p className="text-green-300 text-xs text-center">© 2025 MUGETRA-NPG.CI — Tous droits réservés</p>
+          <p className="text-green-300 text-xs text-center">© {new Date().getFullYear()} MUGETRA-NPG.CI — Tous droits réservés</p>
         </div>
       </div>
 
