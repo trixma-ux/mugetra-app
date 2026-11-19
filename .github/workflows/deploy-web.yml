@@ -8,6 +8,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: gh-pages-deploy
+  cancel-in-progress: true
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
@@ -30,10 +34,21 @@ jobs:
         run: pnpm install --no-frozen-lockfile
 
       - name: Build web
+        env:
+          # vite.config.ts requires PORT and BASE_PATH (Replit dev config)
+          PORT: '3000'
+          BASE_PATH: /mugetra-app/
+          NODE_ENV: production
         run: pnpm --filter @workspace/mugetra run build
+
+      - name: Prepare SPA fallback
+        run: |
+          cp artifacts/mugetra/dist/public/index.html artifacts/mugetra/dist/public/404.html
+          touch artifacts/mugetra/dist/public/.nojekyll
 
       - name: Deploy to gh-pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./artifacts/mugetra/dist
+          publish_dir: ./artifacts/mugetra/dist/public
+          publish_branch: gh-pages
