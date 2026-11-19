@@ -24,8 +24,9 @@ Le schéma est géré par Drizzle (`lib/db`). Il est poussé automatiquement à 
 DATABASE_URL="<url Neon>" pnpm --filter @workspace/db run push
 ```
 
-Aucun compte n'est créé automatiquement : le premier administrateur doit être inséré
-dans la table `users` (mot de passe haché avec bcrypt).
+Aucun compte n'est créé automatiquement : créer le premier administrateur avec
+`pnpm --filter @workspace/api-server run create-admin -- --email ... --password ...`
+(voir README, § 5 « Premier administrateur »). Données de démo : `run seed-demo`.
 
 ## ⚠️ Fichiers envoyés (uploads/) éphémères
 

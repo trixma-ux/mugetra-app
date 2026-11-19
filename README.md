@@ -136,6 +136,33 @@ PORT=5001 BASE_PATH=/ pnpm --filter @workspace/mugetra run dev
 L'app mobile (Expo) nécessite en plus `EXPO_PUBLIC_DOMAIN` (domaine public de l'API, sans le
 `https://`) dans son environnement — voir `artifacts/mugetra-mobile/app/_layout.tsx`.
 
+### Premier administrateur (pas d'inscription publique, par conception)
+
+Les comptes sont créés par l'administration ; le tout premier admin se crée en ligne de
+commande (idempotent : si l'email existe, le compte est conservé et seul le rôle `admin` est
+confirmé ; le mot de passe n'est remplacé qu'avec `--reset-password` ; il n'est jamais affiché) :
+
+```bash
+DATABASE_URL="<url PostgreSQL>" pnpm --filter @workspace/api-server run create-admin -- \
+  --email admin@exemple.ci --password '<12 caractères minimum>' [--nom Admin --prenom MUGETRA]
+# ou via l'environnement : ADMIN_EMAIL=... ADMIN_PASSWORD=... pnpm --filter @workspace/api-server run create-admin
+# réinitialiser le mot de passe d'un admin existant : ajouter --reset-password
+```
+
+Connexion ensuite avec `POST /api/auth/login` (`{ "email", "motDePasse" }`) ou la page de connexion.
+
+### Données de démonstration
+
+Seed idempotent : 8 membres **fictifs** (matricules `DEMO-001` à `DEMO-008`, numéros
+`+225 07000001xx` non attribués) et leurs cotisations (7 500 FCFA) des 6 derniers mois clos
+— dont un membre défaillant (2 mois payés) et un en retard (4 mois). Relancer le script ne
+crée pas de doublons (upsert par matricule, une cotisation par membre/année/mois) et ne touche
+jamais aux membres réels. Données : `artifacts/api-server/scripts/seed-data.json`.
+
+```bash
+DATABASE_URL="<url PostgreSQL>" pnpm --filter @workspace/api-server run seed-demo
+```
+
 ### Vérifications
 
 ```bash

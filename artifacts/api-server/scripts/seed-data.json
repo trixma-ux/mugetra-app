@@ -1,0 +1,14 @@
+{
+  "_note": "Données FICTIVES de démonstration (matricules DEMO-xxx, numéros +225 07 00 00 0x xx non attribués). Cotisation mensuelle : 7 500 FCFA.",
+  "cotisationMensuelle": 7500,
+  "membres": [
+    { "matricule": "DEMO-001", "nom": "Kouassi", "prenom": "Yao Jean", "telephone": "+225 0700000101", "departement": "Exploitation", "poste": "Chef d'équipe", "dateAdhesion": "2024-03-01", "typeCdi": "ancien", "moisPayes": 6, "mode": "prelevement" },
+    { "matricule": "DEMO-002", "nom": "Koné", "prenom": "Aminata", "telephone": "+225 0700000102", "departement": "Ressources humaines", "poste": "Assistante RH", "dateAdhesion": "2024-06-01", "typeCdi": "ancien", "moisPayes": 6, "mode": "prelevement" },
+    { "matricule": "DEMO-003", "nom": "Traoré", "prenom": "Moussa", "telephone": "+225 0700000103", "departement": "Maintenance", "poste": "Mécanicien", "dateAdhesion": "2024-09-01", "typeCdi": "ancien", "moisPayes": 6, "mode": "especes" },
+    { "matricule": "DEMO-004", "nom": "N'Guessan", "prenom": "Adjoua Marie", "telephone": "+225 0700000104", "departement": "Comptabilité", "poste": "Comptable", "dateAdhesion": "2025-01-01", "typeCdi": "nouveau", "moisPayes": 6, "mode": "virement" },
+    { "matricule": "DEMO-005", "nom": "Bamba", "prenom": "Seydou", "telephone": "+225 0700000105", "departement": "Logistique", "poste": "Chauffeur", "dateAdhesion": "2025-02-01", "typeCdi": "nouveau", "moisPayes": 4, "mode": "especes" },
+    { "matricule": "DEMO-006", "nom": "Kouamé", "prenom": "Affoué Christelle", "telephone": "+225 0700000106", "departement": "Commercial", "poste": "Chargée de clientèle", "dateAdhesion": "2025-05-01", "typeCdi": "nouveau", "moisPayes": 6, "mode": "prelevement" },
+    { "matricule": "DEMO-007", "nom": "Ouattara", "prenom": "Ibrahim", "telephone": "+225 0700000107", "departement": "Sécurité", "poste": "Agent de sécurité", "dateAdhesion": "2025-09-01", "typeCdi": "nouveau", "moisPayes": 2, "mode": "especes", "statut": "defaillant" },
+    { "matricule": "DEMO-008", "nom": "Diabaté", "prenom": "Fatoumata", "telephone": "+225 0700000108", "departement": "Administration", "poste": "Secrétaire", "dateAdhesion": "2026-01-01", "typeCdi": "nouveau", "moisPayes": 6, "mode": "virement" }
+  ]
+}
