@@ -1,3 +1,4 @@
+import { apiUrl } from "@/lib/config";
 import { useQuery, useMutation, useQueryClient, type UseQueryOptions } from "@tanstack/react-query";
 
 export async function apiFetch<T = any>(path: string, init: RequestInit = {}): Promise<T> {
@@ -7,7 +8,7 @@ export async function apiFetch<T = any>(path: string, init: RequestInit = {}): P
     headers.set("Content-Type", "application/json");
   }
   if (token) headers.set("Authorization", `Bearer ${token}`);
-  const res = await fetch(`/api${path}`, { ...init, headers, credentials: "include" });
+  const res = await fetch(apiUrl(path), { ...init, headers, credentials: "include" });
   if (!res.ok) {
     let message = `Erreur ${res.status}`;
     try { message = (await res.json())?.error ?? message; } catch { /* ignore */ }

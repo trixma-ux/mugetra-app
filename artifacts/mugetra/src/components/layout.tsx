@@ -26,6 +26,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useState } from "react";
+import { publicAsset } from "@/lib/config";
 
 const navSections: { title: string; items: { href: string; label: string; icon: any }[] }[] = [
   {
@@ -82,10 +83,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleLogout = () => {
+    // onSettled : se déconnecter localement même si l'API est injoignable
     logout.mutate(undefined, {
-      onSuccess: () => {
+      onSettled: () => {
         localStorage.removeItem("mugetra_token");
-        window.location.href = "/login";
+        window.location.href = `${import.meta.env.BASE_URL}login`;
       }
     });
   };
@@ -93,7 +95,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const NavLinks = () => (
     <>
       <div className="flex items-center justify-center px-4 py-5">
-        <img src="/logo-mugetra.png" alt="MUGETRA" className="h-10 object-contain" style={{ filter: "brightness(0) invert(1)" }} />
+        <img src={publicAsset("logo-mugetra.png")} alt="MUGETRA" className="h-10 object-contain" style={{ filter: "brightness(0) invert(1)" }} />
       </div>
       <nav className="flex-1 space-y-1 px-3 py-4 overflow-y-auto">
         {navSections.map((section, si) => (
@@ -147,7 +149,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <div className="flex-1 flex flex-col min-w-0">
         <header className="md:hidden flex items-center justify-between p-4 bg-sidebar text-sidebar-foreground">
           <div className="flex items-center gap-2">
-            <img src="/logo-mugetra.png" alt="MUGETRA" className="h-7 object-contain" style={{ filter: "brightness(0) invert(1)" }} />
+            <img src={publicAsset("logo-mugetra.png")} alt="MUGETRA" className="h-7 object-contain" style={{ filter: "brightness(0) invert(1)" }} />
           </div>
           <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
             <SheetTrigger asChild>

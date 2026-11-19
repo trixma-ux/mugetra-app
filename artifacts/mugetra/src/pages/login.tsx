@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
+import { API_ORIGIN, publicAsset } from "@/lib/config";
 
 const adminSchema = z.object({
   identifiant: z.string().email({ message: "Email invalide" }),
@@ -20,7 +21,7 @@ const mutualisteSchema = z.object({
 });
 
 async function loginCall(identifiant: string, motDePasse: string) {
-  const res = await fetch("/api/auth/login", {
+  const res = await fetch(`${API_ORIGIN}/api/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ identifiant, motDePasse }),
@@ -61,7 +62,7 @@ export default function Login() {
         <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "radial-gradient(circle at 20% 80%, #c9a227 0%, transparent 50%), radial-gradient(circle at 80% 20%, #fff 0%, transparent 40%)" }} />
         <div className="relative z-10">
           <div className="flex items-center gap-4 mb-12">
-            <img src="/logo-mugetra.png" alt="MUGETRA" className="h-16 w-16 object-contain drop-shadow-lg" />
+            <img src={publicAsset("logo-mugetra.png")} alt="MUGETRA" className="h-16 w-16 object-contain drop-shadow-lg" />
             <div>
               <h1 className="text-white font-bold text-xl leading-tight">MUGETRA-NPG.CI</h1>
               <p className="text-green-200 text-xs mt-0.5">Espace de gestion</p>
@@ -97,7 +98,7 @@ export default function Login() {
       <div className="flex-1 flex flex-col justify-center px-8 sm:px-12 lg:px-16 xl:px-24 bg-background">
         <div className="w-full max-w-md mx-auto">
           <div className="lg:hidden flex items-center gap-3 mb-10">
-            <img src="/logo-mugetra.png" alt="MUGETRA" className="h-12 object-contain" />
+            <img src={publicAsset("logo-mugetra.png")} alt="MUGETRA" className="h-12 object-contain" />
             <div><p className="font-bold text-base">MUGETRA-NPG.CI</p><p className="text-muted-foreground text-xs">Espace de gestion</p></div>
           </div>
           <div className="mb-8">
