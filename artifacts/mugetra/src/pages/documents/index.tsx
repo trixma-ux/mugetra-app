@@ -10,6 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { formatDate } from "@/lib/format";
 import { useToast } from "@/hooks/use-toast";
+import { API_ORIGIN } from "@/lib/config";
 
 const CATEGORIES: Record<string, string> = {
   statut: "Statuts", reglement_interieur: "Règlement intérieur", pv: "Procès-verbaux", rapport: "Rapports",
@@ -33,7 +34,7 @@ export default function DocumentsPage() {
     fd.append("nom", nom || file.name);
     fd.append("categorie", uploadCategorie);
     const token = localStorage.getItem("mugetra_token");
-    const res = await fetch("/api/documents", { method: "POST", body: fd, headers: token ? { Authorization: `Bearer ${token}` } : undefined });
+    const res = await fetch(`${API_ORIGIN}/api/documents`, { method: "POST", body: fd, headers: token ? { Authorization: `Bearer ${token}` } : undefined });
     if (!res.ok) throw new Error((await res.json())?.error ?? "Échec de l'envoi");
     return res.json();
   }, [["/documents", categorie]]);

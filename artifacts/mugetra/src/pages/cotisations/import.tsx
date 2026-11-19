@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { ArrowLeft, Upload, FileSpreadsheet, Download, Plus, Trash2, CheckCircle2, XCircle, AlertCircle, Loader2, Calendar, History } from "lucide-react";
 import { formatFCFA } from "@/lib/format";
+import { API_ORIGIN } from "@/lib/config";
 
 const token = () => localStorage.getItem("mugetra_token") ?? "";
 
@@ -169,7 +170,7 @@ export default function ImportCotisations() {
       fd.append("mois", moisMensuel);
       fd.append("datePaiement", datePaiementMensuel);
       fd.append("modePaiement", modeMensuel);
-      const resp = await fetch("/api/cotisations/import-excel", {
+      const resp = await fetch(`${API_ORIGIN}/api/cotisations/import-excel`, {
         method: "POST", headers: { Authorization: `Bearer ${token()}` }, body: fd,
       });
       const data = await resp.json();
@@ -185,7 +186,7 @@ export default function ImportCotisations() {
     if (!valides.length) { setError("Renseignez au moins un matricule"); return; }
     setImporting(true); reset();
     try {
-      const resp = await fetch("/api/cotisations/import-excel", {
+      const resp = await fetch(`${API_ORIGIN}/api/cotisations/import-excel`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token()}`, "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -213,7 +214,7 @@ export default function ImportCotisations() {
     try {
       const fd = new FormData();
       fd.append("fichier", fileArriere);
-      const resp = await fetch("/api/cotisations/import-arrieres", {
+      const resp = await fetch(`${API_ORIGIN}/api/cotisations/import-arrieres`, {
         method: "POST", headers: { Authorization: `Bearer ${token()}` }, body: fd,
       });
       const data = await resp.json();
@@ -229,7 +230,7 @@ export default function ImportCotisations() {
     if (!valides.length) { setError("Renseignez au moins une ligne complète"); return; }
     setImporting(true); reset();
     try {
-      const resp = await fetch("/api/cotisations/import-arrieres", {
+      const resp = await fetch(`${API_ORIGIN}/api/cotisations/import-arrieres`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token()}`, "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -322,7 +323,7 @@ export default function ImportCotisations() {
 
             <TabsContent value="fichier-m" className="mt-3 space-y-3">
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={() => window.open(`/api/cotisations/import/template-mensuel?token=${token()}`, "_blank")}>
+                <Button variant="outline" size="sm" onClick={() => window.open(`${API_ORIGIN}/api/cotisations/import/template-mensuel?token=${token()}`, "_blank")}>
                   <Download className="mr-2 h-3 w-3" />Modèle Excel
                 </Button>
               </div>
@@ -384,7 +385,7 @@ export default function ImportCotisations() {
 
             <TabsContent value="fichier-a" className="mt-3 space-y-3">
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={() => window.open(`/api/cotisations/import/template-arrieres?token=${token()}`, "_blank")}>
+                <Button variant="outline" size="sm" onClick={() => window.open(`${API_ORIGIN}/api/cotisations/import/template-arrieres?token=${token()}`, "_blank")}>
                   <Download className="mr-2 h-3 w-3" />Modèle Excel
                 </Button>
               </div>

@@ -9,6 +9,7 @@ import { formatFCFA, formatDate, formatDateTime } from "@/lib/format";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
+import { API_ORIGIN } from "@/lib/config";
 
 const TYPE_LABELS: Record<string, string> = {
   deces_membre: "Décès d'un membre actif", deces_conjoint: "Décès du conjoint(e)",
@@ -55,7 +56,7 @@ export default function AssistanceDetail() {
 
   const handlePdf = () => {
     const token = localStorage.getItem("mugetra_token");
-    window.open(`/api/pdf/assistances/${id}?token=${token}`, "_blank");
+    window.open(`${API_ORIGIN}/api/pdf/assistances/${id}?token=${token}`, "_blank");
   };
 
   const handleValider = (decision: "approuver" | "rejeter") => {

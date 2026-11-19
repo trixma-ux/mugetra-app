@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { formatFCFA, formatDate } from "@/lib/format";
 import { useToast } from "@/hooks/use-toast";
+import { API_ORIGIN } from "@/lib/config";
 
 const TYPES: Record<string, string> = {
   demission_mutuelle: "Démission de la mutuelle (reste à la NPG.CI)",
@@ -30,7 +31,7 @@ export default function DepartsPage() {
 
   const simuler = useApiMutation(async () => {
     if (!form.membreId) return null;
-    const data = await fetch(`/api/departs/simuler/${form.membreId}?type=${form.type}`, {
+    const data = await fetch(`${API_ORIGIN}/api/departs/simuler/${form.membreId}?type=${form.type}`, {
       headers: { Authorization: `Bearer ${localStorage.getItem("mugetra_token")}` },
     }).then((r) => r.json());
     setSimulation(data);
