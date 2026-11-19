@@ -8,7 +8,9 @@ services:
     region: frankfurt
     branch: main
     # NODE_ENV=development pour l'installation : esbuild etc. sont en devDependencies
-    buildCommand: NODE_ENV=development pnpm install --no-frozen-lockfile && pnpm --filter @workspace/api-server run build
+    buildCommand: NODE_ENV=development pnpm install --no-frozen-lockfile && pnpm --filter @workspace/api-server run build && pnpm --filter @workspace/db run push
+    # Le schéma Drizzle est poussé vers Neon au build (DATABASE_URL disponible au build).
+    # Sans --force : un changement destructif fait échouer le build au lieu de perdre des données.
     startCommand: node artifacts/api-server/dist/index.mjs
     healthCheckPath: /api/healthz
     autoDeploy: true

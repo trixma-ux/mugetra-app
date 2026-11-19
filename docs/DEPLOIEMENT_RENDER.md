@@ -17,7 +17,8 @@
 
 ## Schéma de base de données
 
-Le schéma est géré par Drizzle (`lib/db`). Après création de la base, ou après un changement de schéma :
+Le schéma est géré par Drizzle (`lib/db`). Il est poussé automatiquement à chaque build Render
+(`pnpm --filter @workspace/db run push`, sans `--force`). Pour le faire à la main :
 
 ```bash
 DATABASE_URL="<url Neon>" pnpm --filter @workspace/db run push
