@@ -11,6 +11,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, Upload, FileSpreadsheet, Download, Plus, Trash2, CheckCircle2, XCircle, AlertCircle, Loader2 } from "lucide-react";
+import { API_ORIGIN } from "@/lib/config";
 
 const token = () => localStorage.getItem("mugetra_token") ?? "";
 
@@ -53,7 +54,7 @@ export default function ImportMembres() {
   };
 
   const downloadTemplate = () => {
-    window.open(`/api/membres/import/template?token=${token()}`, "_blank");
+    window.open(`${API_ORIGIN}/api/membres/import/template?token=${token()}`, "_blank");
   };
 
   const handleFile = (file: File) => {
@@ -81,7 +82,7 @@ export default function ImportMembres() {
     try {
       const fd = new FormData();
       fd.append("fichier", fileDataRef.current);
-      const resp = await fetch(`/api/membres/import`, {
+      const resp = await fetch(`${API_ORIGIN}/api/membres/import`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token()}` },
         body: fd,
@@ -113,7 +114,7 @@ export default function ImportMembres() {
         departement: r.departement || undefined,
         poste: r.poste || undefined,
       }));
-      const resp = await fetch(`/api/membres/import`, {
+      const resp = await fetch(`${API_ORIGIN}/api/membres/import`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token()}`, "Content-Type": "application/json" },
         body: JSON.stringify(payload),

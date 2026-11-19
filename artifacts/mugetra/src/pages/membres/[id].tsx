@@ -12,6 +12,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { API_ORIGIN } from "@/lib/config";
 
 type AccesStatus = { actif: boolean; identifiant: string | null; email: string | null; createdAt: string | null } | null;
 type CredInfo = { identifiant: string; motDePasse: string; action: "creation" | "reset" };
@@ -39,7 +40,7 @@ export default function MembreDetail() {
     if (!id) return;
     setAccesLoading(true);
     try {
-      const res = await fetch(`/api/membres/${id}/acces`, {
+      const res = await fetch(`${API_ORIGIN}/api/membres/${id}/acces`, {
         headers: { Authorization: `Bearer ${token()}` },
       });
       if (res.ok) setAcces(await res.json());
@@ -49,13 +50,13 @@ export default function MembreDetail() {
 
   useEffect(() => { fetchAcces(); }, [id]);
 
-  const handleFicheAdhesion = () => window.open(`/api/pdf/membres/${id}/fiche-adhesion?token=${token()}`, "_blank");
-  const handleReleve = () => window.open(`/api/pdf/cotisations/${id}?token=${token()}`, "_blank");
+  const handleFicheAdhesion = () => window.open(`${API_ORIGIN}/api/pdf/membres/${id}/fiche-adhesion?token=${token()}`, "_blank");
+  const handleReleve = () => window.open(`${API_ORIGIN}/api/pdf/cotisations/${id}?token=${token()}`, "_blank");
 
   const handleAutoriserAcces = async () => {
     setActionLoading("autoriser");
     try {
-      const res = await fetch(`/api/membres/${id}/autoriser-acces`, {
+      const res = await fetch(`${API_ORIGIN}/api/membres/${id}/autoriser-acces`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token()}`, "Content-Type": "application/json" },
       });
@@ -76,7 +77,7 @@ export default function MembreDetail() {
   const handleResetAcces = async () => {
     setActionLoading("reset");
     try {
-      const res = await fetch(`/api/membres/${id}/reset-acces`, {
+      const res = await fetch(`${API_ORIGIN}/api/membres/${id}/reset-acces`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token()}`, "Content-Type": "application/json" },
       });
@@ -98,7 +99,7 @@ export default function MembreDetail() {
     setConfirmResilier(false);
     setActionLoading("resilier");
     try {
-      const res = await fetch(`/api/membres/${id}/resilier-acces`, {
+      const res = await fetch(`${API_ORIGIN}/api/membres/${id}/resilier-acces`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token()}` },
       });

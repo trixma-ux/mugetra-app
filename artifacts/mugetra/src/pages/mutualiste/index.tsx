@@ -7,6 +7,7 @@ import {
   FileText, Download, LogOut, AlertCircle, CheckCircle,
   Clock, User, FileDown, Receipt, Plus, Shield
 } from "lucide-react";
+import { API_ORIGIN, publicAsset } from "@/lib/config";
 
 const TYPE_LABELS: Record<string, string> = {
   deces_membre: "Décès membre", deces_conjoint: "Décès conjoint",
@@ -69,15 +70,15 @@ export default function MutualistePortal() {
   const getToken = () => localStorage.getItem("mugetra_token") ?? "";
 
   const handleFicheAdhesion = () => {
-    window.open(`/api/pdf/membres/${membreId}/fiche-adhesion?token=${getToken()}`, "_blank");
+    window.open(`${API_ORIGIN}/api/pdf/membres/${membreId}/fiche-adhesion?token=${getToken()}`, "_blank");
   };
 
   const handleDemandeAssistancePdf = (assistanceId: number) => {
-    window.open(`/api/pdf/assistances/${assistanceId}?token=${getToken()}`, "_blank");
+    window.open(`${API_ORIGIN}/api/pdf/assistances/${assistanceId}?token=${getToken()}`, "_blank");
   };
 
   const handleBonDecaissement = (assistanceId: number) => {
-    window.open(`/api/pdf/assistances/${assistanceId}/bon-decaissement?token=${getToken()}`, "_blank");
+    window.open(`${API_ORIGIN}/api/pdf/assistances/${assistanceId}/bon-decaissement?token=${getToken()}`, "_blank");
   };
 
   const handleLogout = () => {
@@ -116,7 +117,7 @@ export default function MutualistePortal() {
       <div className="sticky top-0 z-20 bg-white border-b shadow-sm">
         <div className="max-w-4xl mx-auto px-4 h-14 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src="/logo-mugetra.png" alt="MUGETRA" className="h-8 object-contain" />
+            <img src={publicAsset("logo-mugetra.png")} alt="MUGETRA" className="h-8 object-contain" />
             <div className="hidden sm:block">
               <p className="text-xs font-bold text-[#1a5c3a] leading-none">MUGETRA-NPG.CI</p>
               <p className="text-[10px] text-gray-400 leading-none mt-0.5">Espace mutualiste</p>

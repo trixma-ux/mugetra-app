@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, AlertCircle, Shield, Send } from "lucide-react";
+import { publicAsset } from "@/lib/config";
 
 const TYPE_OPTIONS = [
   { value: "deces_membre",          label: "Décès d'un membre actif",      commission: "affaires_sociales" },
@@ -126,7 +127,7 @@ export default function MutualisteNouvelleDemande() {
             <ArrowLeft className="h-4 w-4 text-gray-600" />
           </button>
           <div>
-            <img src="/logo-mugetra.png" alt="MUGETRA" className="h-7 object-contain" />
+            <img src={publicAsset("logo-mugetra.png")} alt="MUGETRA" className="h-7 object-contain" />
           </div>
           <div className="ml-1">
             <p className="text-xs font-bold text-[#1a5c3a] leading-none">Nouvelle demande</p>
