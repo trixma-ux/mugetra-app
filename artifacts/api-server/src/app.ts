@@ -27,7 +27,24 @@ app.use(
     },
   }),
 );
-app.use(cors());
+// CORS : origines autorisées via CORS_ORIGIN (liste séparée par des virgules).
+// Par défaut : GitHub Pages + développement local.
+const allowedOrigins = (process.env.CORS_ORIGIN ?? "https://trixma-ux.github.io,http://localhost:5173")
+  .split(",")
+  .map((o) => o.trim().replace(/\/+$/, ""))
+  .filter(Boolean);
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes("*") || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(null, false);
+      }
+    },
+    credentials: true,
+  }),
+);
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

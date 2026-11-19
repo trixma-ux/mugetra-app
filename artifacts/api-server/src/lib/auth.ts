@@ -1,7 +1,16 @@
 import jwt from "jsonwebtoken";
 import type { Request, Response, NextFunction } from "express";
 
-const JWT_SECRET = process.env.JWT_SECRET ?? "mugetra_secret_key_2024";
+// JWT_SECRET est obligatoire en production (arrêt immédiat s'il manque).
+// Valeur de secours réservée au développement / aux tests locaux.
+const DEV_ONLY_JWT_SECRET = "mugetra-dev-only-jwt-secret-do-not-use-in-prod";
+const JWT_SECRET: string = (() => {
+  const secret = process.env.JWT_SECRET?.trim();
+  if (secret) return secret;
+  const env = process.env.NODE_ENV ?? "development";
+  if (env === "development" || env === "test") return DEV_ONLY_JWT_SECRET;
+  throw new Error(`JWT_SECRET doit être défini (NODE_ENV=${env}).`);
+})();
 
 export interface JwtPayload {
   userId: number;

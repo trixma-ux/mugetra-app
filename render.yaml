@@ -1,0 +1,28 @@
+# Render Blueprint : API MUGETRA (plan gratuit) + base Neon (PostgreSQL)
+# Frontend : https://trixma-ux.github.io/mugetra-app/ (GitHub Pages, VITE_API_URL)
+services:
+  - type: web
+    name: mugetra-api
+    runtime: node
+    plan: free
+    region: frankfurt
+    branch: main
+    buildCommand: pnpm install --no-frozen-lockfile && pnpm --filter @workspace/api-server run build
+    startCommand: node artifacts/api-server/dist/index.mjs
+    healthCheckPath: /api/healthz
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: "20"
+      - key: JWT_SECRET
+        generateValue: true
+      # Chaîne de connexion Neon, ex. postgresql://USER:PASSWORD@ep-xxx.eu-central-1.aws.neon.tech/mugetra?sslmode=require
+      - key: DATABASE_URL
+        sync: false
+      - key: CORS_ORIGIN
+        value: https://trixma-ux.github.io
+      # ATTENTION : pas de disque persistant sur le plan gratuit.
+      # Les fichiers envoyés dans uploads/ (documents) sont perdus à chaque
+      # redéploiement ou redémarrage de l'instance. Voir docs/DEPLOIEMENT_RENDER.md.
