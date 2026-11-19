@@ -6,6 +6,7 @@ import NotFound from "@/pages/not-found";
 import { setAuthTokenGetter, useGetCurrentUser } from "@workspace/api-client-react";
 import { useEffect } from "react";
 import { Layout } from "@/components/layout";
+import { ApiStatusBanner } from "@/components/api-status-banner";
 import Login from "@/pages/login";
 import Dashboard from "@/pages/dashboard";
 import MembresList from "@/pages/membres/index";
@@ -112,6 +113,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
+        <ApiStatusBanner />
         <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
           <Router />
         </WouterRouter>
