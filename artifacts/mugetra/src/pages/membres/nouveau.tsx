@@ -1,26 +1,11 @@
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { useLocation } from "wouter";
 import { useCreateMembre, getListMembresQueryKey } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
-
-const formSchema = z.object({
-  matricule: z.string().min(1, "Champ requis").regex(/^[a-zA-Z0-9]+$/, "Lettres et chiffres uniquement (ex: 001 ou MG001)"),
-  nom: z.string().min(1, "Champ requis"),
-  prenom: z.string().min(1, "Champ requis"),
-  email: z.string().email("Adresse email invalide").optional().or(z.literal("")),
-  telephone: z.string().optional().or(z.literal("")),
-  typeAdhesion: z.enum(["ordinaire", "exceptionnel", "non_national"]),
-  dateAdhesion: z.string().min(1, "Champ requis"),
-});
+import { MembreForm, emptyMembreForm, type MembreFormValues } from "@/components/membre-form";
 
 export default function NouveauMembre() {
   const [, setLocation] = useLocation();
@@ -28,20 +13,7 @@ export default function NouveauMembre() {
   const queryClient = useQueryClient();
   const createMutation = useCreateMembre();
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      matricule: "",
-      nom: "",
-      prenom: "",
-      email: "",
-      telephone: "",
-      typeAdhesion: "ordinaire",
-      dateAdhesion: new Date().toISOString().split("T")[0],
-    },
-  });
-
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
+  const onSubmit = (values: MembreFormValues) => {
     // Nettoyer les champs vides → undefined pour éviter les erreurs de validation backend
     const payload: Record<string, any> = {};
     for (const [k, v] of Object.entries(values)) {
@@ -77,53 +49,12 @@ export default function NouveauMembre() {
           <CardTitle>Informations Personnelles</CardTitle>
         </CardHeader>
         <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <FormField control={form.control} name="matricule" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Matricule</FormLabel>
-                    <FormControl><Input placeholder="ex: MG-0001" {...field} /></FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )} />
-                <FormField control={form.control} name="typeAdhesion" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Type d'adhésion</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl><SelectTrigger><SelectValue placeholder="Sélectionnez..." /></SelectTrigger></FormControl>
-                      <SelectContent>
-                        <SelectItem value="ordinaire">Ordinaire</SelectItem>
-                        <SelectItem value="exceptionnel">Exceptionnel</SelectItem>
-                        <SelectItem value="non_national">Non National</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )} />
-                <FormField control={form.control} name="nom" render={({ field }) => (
-                  <FormItem><FormLabel>Nom</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                )} />
-                <FormField control={form.control} name="prenom" render={({ field }) => (
-                  <FormItem><FormLabel>Prénom</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                )} />
-                <FormField control={form.control} name="telephone" render={({ field }) => (
-                  <FormItem><FormLabel>Téléphone</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                )} />
-                <FormField control={form.control} name="email" render={({ field }) => (
-                  <FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" {...field} /></FormControl><FormMessage /></FormItem>
-                )} />
-                <FormField control={form.control} name="dateAdhesion" render={({ field }) => (
-                  <FormItem><FormLabel>Date d'adhésion</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>
-                )} />
-              </div>
-              <div className="flex justify-end pt-4">
-                <Button type="submit" disabled={createMutation.isPending}>
-                  {createMutation.isPending ? "Enregistrement..." : "Enregistrer le membre"}
-                </Button>
-              </div>
-            </form>
-          </Form>
+          <MembreForm
+            defaultValues={emptyMembreForm()}
+            onSubmit={onSubmit}
+            isPending={createMutation.isPending}
+            submitLabel="Enregistrer le membre"
+          />
         </CardContent>
       </Card>
     </div>

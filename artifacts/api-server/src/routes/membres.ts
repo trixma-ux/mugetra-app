@@ -5,19 +5,20 @@ import crypto from "crypto";
 import { sendMail } from "../lib/mailer";
 import { eq, or, ilike, and, sql, desc, ne, isNull } from "drizzle-orm";
 import {
-  CreateMembreBody, UpdateMembreBody, UpdateMembreStatutBody,
+  CreateMembreBody, ReplaceMembreBody, PatchMembreBody, UpdateMembreStatutBody,
   DeclarerDecesMembreBody, ListMembresQueryParams,
   GetMembreParams, UpdateMembreParams, UpdateMembreStatutParams,
   GetMembreCarenceParams, DeclarerDecesMembreParams, DeleteMembreParams,
 } from "@workspace/api-zod";
-import { requireAuth } from "../lib/auth";
+import { requireAuth, requireRole } from "../lib/auth";
 
 const router: IRouter = Router();
 
 function buildMembreResponse(m: any, personnes?: any[]) {
   return {
     id: m.id, matricule: m.matricule, nom: m.nom, prenom: m.prenom,
-    email: m.email, telephone: m.telephone,
+    email: m.email, telephone: m.telephone, whatsapp: m.whatsapp,
+    lieuNaissance: m.lieuNaissance, typeCdi: m.typeCdi, service: m.service, fonction: m.fonction,
     dateNaissance: m.dateNaissance, dateEmbauche: m.dateEmbauche,
     dateCdi: m.dateCdi, dateAdhesion: m.dateAdhesion,
     statut: m.statut, typeAdhesion: m.typeAdhesion,
@@ -115,17 +116,68 @@ router.get("/membres/:id", requireAuth, async (req, res): Promise<void> => {
   });
 });
 
-router.put("/membres/:id", requireAuth, async (req, res): Promise<void> => {
-  const params = UpdateMembreParams.safeParse(req.params);
-  if (!params.success) { res.status(400).json({ error: "ID invalide" }); return; }
-  const parsed = UpdateMembreBody.safeParse(req.body);
-  if (!parsed.success) { res.status(400).json({ error: parsed.error.message }); return; }
+/** Message d'erreur de validation lisible (premier problème rencontré). */
+function validationError(err: { issues: { path: (string | number)[]; message: string; code: string; keys?: string[] }[] }): string {
+  const issue = err.issues[0];
+  if (!issue) return "Données invalides";
+  if (issue.code === "unrecognized_keys") return `Champ(s) non modifiable(s) : ${(issue.keys ?? []).join(", ")}`;
+  const champ = issue.path.join(".");
+  return champ ? `Champ « ${champ} » invalide : ${issue.message}` : issue.message;
+}
 
-  const { conjoint, enfants, parents, beauxParents, ...membreData } = parsed.data as any;
-  const [updated] = await db.update(membresTable).set(membreData).where(eq(membresTable.id, params.data.id)).returning();
-  if (!updated) { res.status(404).json({ error: "Membre introuvable" }); return; }
-  res.json(buildMembreResponse(updated));
-});
+/** Vérifie qu'aucun AUTRE membre n'utilise déjà ce matricule ou ce téléphone. */
+async function findConflict(id: number, data: { matricule?: string; telephone?: string | null }): Promise<string | null> {
+  if (data.matricule) {
+    const [m] = await db.select({ id: membresTable.id }).from(membresTable)
+      .where(and(eq(membresTable.matricule, data.matricule), ne(membresTable.id, id)));
+    if (m) return `Le matricule ${data.matricule} est déjà attribué à un autre membre.`;
+  }
+  if (data.telephone) {
+    const [m] = await db.select({ id: membresTable.id }).from(membresTable)
+      .where(and(eq(membresTable.telephone, data.telephone), ne(membresTable.id, id)));
+    if (m) return `Le numéro ${data.telephone} est déjà utilisé par un autre membre.`;
+  }
+  return null;
+}
+
+/**
+ * PUT  /membres/:id — remplace la fiche (matricule, nom, prénom obligatoires).
+ * PATCH /membres/:id — modifie seulement les champs envoyés.
+ * Réservé au rôle admin. 400 invalide, 404 inconnu, 409 matricule/téléphone déjà pris.
+ */
+function updateMembreHandler(mode: "put" | "patch") {
+  return async (req: any, res: any): Promise<void> => {
+    const params = UpdateMembreParams.safeParse(req.params);
+    if (!params.success) { res.status(400).json({ error: "ID invalide" }); return; }
+    const schema = mode === "put" ? ReplaceMembreBody : PatchMembreBody;
+    const parsed = schema.safeParse(req.body ?? {});
+    if (!parsed.success) { res.status(400).json({ error: validationError(parsed.error as any) }); return; }
+
+    const id = params.data.id;
+    const [existing] = await db.select({ id: membresTable.id }).from(membresTable).where(eq(membresTable.id, id));
+    if (!existing) { res.status(404).json({ error: "Membre introuvable" }); return; }
+
+    const data = parsed.data as Record<string, unknown>;
+    const conflict = await findConflict(id, data as any);
+    if (conflict) { res.status(409).json({ error: conflict }); return; }
+
+    try {
+      const [updated] = await db.update(membresTable).set(data as any).where(eq(membresTable.id, id)).returning();
+      if (!updated) { res.status(404).json({ error: "Membre introuvable" }); return; }
+      res.json(buildMembreResponse(updated));
+    } catch (e: any) {
+      // Course éventuelle sur la contrainte unique du matricule
+      if (e?.code === "23505" || e?.cause?.code === "23505") {
+        res.status(409).json({ error: "Le matricule est déjà attribué à un autre membre." });
+        return;
+      }
+      throw e;
+    }
+  };
+}
+
+router.put("/membres/:id", requireAuth, requireRole("admin"), updateMembreHandler("put"));
+router.patch("/membres/:id", requireAuth, requireRole("admin"), updateMembreHandler("patch"));
 
 router.delete("/membres/:id", requireAuth, async (req, res): Promise<void> => {
   const params = DeleteMembreParams.safeParse(req.params);

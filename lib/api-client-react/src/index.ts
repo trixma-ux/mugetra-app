@@ -111,6 +111,14 @@ export function useCreateMembre(opts?: MutOpts<any, any>) {
     ...opts,
   });
 }
+/** PATCH /membres/:id — modification partielle d'une fiche (admin). */
+export function useUpdateMembre(opts?: MutOpts<any, { id: number | string; data: Record<string, any> }>) {
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number | string; data: Record<string, any> }) =>
+      apiFetch(`/membres/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
+    ...opts,
+  });
+}
 
 // ─────────────────────────── COTISATIONS ───────────────────────────
 

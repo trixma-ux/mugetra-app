@@ -1,9 +1,12 @@
 import { useState, useEffect } from "react";
 import { useRoute, useLocation } from "wouter";
-import { useGetMembre, getGetMembreQueryKey, useGetCotisationsResume, getGetCotisationsResumeQueryKey } from "@workspace/api-client-react";
+import { useGetMembre, getGetMembreQueryKey, useGetCotisationsResume, getGetCotisationsResumeQueryKey, useGetCurrentUser, useUpdateMembre } from "@workspace/api-client-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { MembreForm, membreToFormValues, type MembreFormValues } from "@/components/membre-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, User, Phone, Mail, Calendar, Briefcase, Info, FileText, Download, UserCheck, Copy, CheckCircle, RefreshCw, UserX, ShieldCheck, ShieldOff, Eye, EyeOff } from "lucide-react";
+import { ArrowLeft, User, Phone, Mail, Calendar, Briefcase, Info, FileText, Download, UserCheck, Copy, CheckCircle, RefreshCw, UserX, ShieldCheck, ShieldOff, Eye, EyeOff, Pencil } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatFCFA, formatDate } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
@@ -35,6 +38,41 @@ export default function MembreDetail() {
   const { data: releve, isLoading: releveLoading } = useGetCotisationsResume(id, { query: { enabled: !!id, queryKey: getGetCotisationsResumeQueryKey(id) } });
 
   const token = () => localStorage.getItem("mugetra_token");
+
+  // ── Modification de la fiche (admin) ──
+  const queryClient = useQueryClient();
+  const { data: currentUser } = useGetCurrentUser();
+  const isAdmin = currentUser?.role === "admin";
+  const [editOpen, setEditOpen] = useState(false);
+  const updateMutation = useUpdateMembre();
+
+  const handleEdit = (values: MembreFormValues) => {
+    if (!membre) return;
+    const initial = membreToFormValues(membre);
+    // N'envoyer que les champs modifiés ; un champ optionnel vidé est effacé (null)
+    const changes: Record<string, any> = {};
+    for (const [k, v] of Object.entries(values) as [keyof MembreFormValues, string][]) {
+      const val = typeof v === "string" ? v.trim() : v;
+      if (val === initial[k]) continue;
+      changes[k] = val === "" && (k === "email" || k === "telephone") ? null : val;
+    }
+    if (Object.keys(changes).length === 0) {
+      setEditOpen(false);
+      toast({ title: "Aucune modification", description: "La fiche n'a pas changé." });
+      return;
+    }
+    updateMutation.mutate({ id, data: changes }, {
+      onSuccess: () => {
+        setEditOpen(false);
+        toast({ title: "✓ Membre modifié", description: "La fiche a été mise à jour avec succès." });
+        queryClient.invalidateQueries({ queryKey: getGetMembreQueryKey(id) });
+        queryClient.invalidateQueries({ queryKey: ["/membres"] });
+      },
+      onError: (err: any) => {
+        toast({ title: "Modification impossible", description: err?.message ?? "Une erreur est survenue.", variant: "destructive" });
+      },
+    });
+  };
 
   const fetchAcces = async () => {
     if (!id) return;
@@ -154,6 +192,25 @@ export default function MembreDetail() {
         </AlertDialogContent>
       </AlertDialog>
 
+      {/* Modification de la fiche */}
+      <Dialog open={editOpen} onOpenChange={(o) => { if (!updateMutation.isPending) setEditOpen(o); }}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Modifier le membre</DialogTitle>
+            <DialogDescription>{membre.prenom} {membre.nom} — {membre.matricule}</DialogDescription>
+          </DialogHeader>
+          {editOpen && (
+            <MembreForm
+              defaultValues={membreToFormValues(membre)}
+              onSubmit={handleEdit}
+              isPending={updateMutation.isPending}
+              submitLabel="Enregistrer les modifications"
+              onCancel={() => setEditOpen(false)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
       {/* En-tête */}
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-4">
@@ -166,6 +223,11 @@ export default function MembreDetail() {
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
+          {isAdmin && (
+            <Button size="sm" onClick={() => setEditOpen(true)} className="gap-2">
+              <Pencil className="h-4 w-4" /> Modifier
+            </Button>
+          )}
           <Button variant="outline" size="sm" onClick={handleFicheAdhesion} className="gap-2">
             <FileText className="h-4 w-4" /> Fiche d'adhésion
           </Button>

@@ -50,6 +50,23 @@ export const CreateMembreBody = z.object({
   beauxParents: z.array(PersonneDeclareeInput).optional(),
 });
 
+// Champs modifiables d'une fiche membre (sans les personnes déclarées,
+// gérées à part). Mêmes règles de validation qu'à la création.
+const MembreEditableFields = CreateMembreBody.omit({
+  conjoint: true, enfants: true, parents: true, beauxParents: true,
+});
+const membreFieldsStrict = MembreEditableFields.extend({
+  matricule: z.string().min(1).regex(/^[a-zA-Z0-9]+$/),
+}).strict();
+
+/** PUT /membres/:id — remplacement : matricule, nom et prénom obligatoires. */
+export const ReplaceMembreBody = membreFieldsStrict;
+/** PATCH /membres/:id — mise à jour partielle, au moins un champ. */
+export const PatchMembreBody = membreFieldsStrict.partial().refine(
+  (o) => Object.keys(o).length > 0,
+  { message: "Aucun champ à modifier" },
+);
+/** @deprecated conservé pour compatibilité ; utiliser ReplaceMembreBody / PatchMembreBody. */
 export const UpdateMembreBody = CreateMembreBody.partial();
 export const UpdateMembreStatutBody = z.object({
   statut: z.enum(["actif", "defaillant", "radie", "demissionnaire", "decede", "honneur"]),
