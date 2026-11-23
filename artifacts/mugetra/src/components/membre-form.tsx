@@ -7,8 +7,16 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 /** Formulaire fiche membre, partagé entre la création et la modification. */
-export const membreFormSchema = z.object({
-  matricule: z.string().trim().min(1, "Champ requis").regex(/^[a-zA-Z0-9]+$/, "Lettres et chiffres uniquement (ex: 001 ou MG001)"),
+const MATRICULE_MSG = "Lettres et chiffres uniquement (ex: 001 ou MG001)";
+
+/**
+ * originalMatricule : en modification, le matricule actuel est accepté tel quel
+ * même s'il suit un ancien format (ex. « DEMO-001 ») ; un nouveau matricule doit
+ * respecter la règle de création.
+ */
+export const makeMembreFormSchema = (originalMatricule?: string) => z.object({
+  matricule: z.string().trim().min(1, "Champ requis").refine(
+    (v) => v === originalMatricule || /^[a-zA-Z0-9]+$/.test(v), MATRICULE_MSG),
   nom: z.string().trim().min(1, "Champ requis"),
   prenom: z.string().trim().min(1, "Champ requis"),
   email: z.string().trim().email("Adresse email invalide").optional().or(z.literal("")),
@@ -17,6 +25,7 @@ export const membreFormSchema = z.object({
   dateAdhesion: z.string().min(1, "Champ requis"),
 });
 
+export const membreFormSchema = makeMembreFormSchema();
 export type MembreFormValues = z.infer<typeof membreFormSchema>;
 
 export const emptyMembreForm = (): MembreFormValues => ({
@@ -49,10 +58,12 @@ type Props = {
   isPending?: boolean;
   submitLabel: string;
   onCancel?: () => void;
+  /** Matricule actuel (mode modification). */
+  originalMatricule?: string;
 };
 
-export function MembreForm({ defaultValues, onSubmit, isPending, submitLabel, onCancel }: Props) {
-  const form = useForm<MembreFormValues>({ resolver: zodResolver(membreFormSchema), defaultValues });
+export function MembreForm({ defaultValues, onSubmit, isPending, submitLabel, onCancel, originalMatricule }: Props) {
+  const form = useForm<MembreFormValues>({ resolver: zodResolver(makeMembreFormSchema(originalMatricule)), defaultValues });
 
   return (
     <Form {...form}>

@@ -55,8 +55,12 @@ export const CreateMembreBody = z.object({
 const MembreEditableFields = CreateMembreBody.omit({
   conjoint: true, enfants: true, parents: true, beauxParents: true,
 });
+// À la modification, le matricule existant peut garder un ancien format
+// (ex. « DEMO-001 ») ; un NOUVEAU matricule doit respecter la règle de création
+// (lettres et chiffres uniquement), contrôlée dans la route.
+export const MATRICULE_CREATION_REGEX = /^[a-zA-Z0-9]+$/;
 const membreFieldsStrict = MembreEditableFields.extend({
-  matricule: z.string().min(1).regex(/^[a-zA-Z0-9]+$/),
+  matricule: z.string().trim().min(1).regex(/^[a-zA-Z0-9-]+$/),
 }).strict();
 
 /** PUT /membres/:id — remplacement : matricule, nom et prénom obligatoires. */

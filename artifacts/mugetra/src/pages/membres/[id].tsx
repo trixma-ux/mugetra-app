@@ -202,6 +202,7 @@ export default function MembreDetail() {
           {editOpen && (
             <MembreForm
               defaultValues={membreToFormValues(membre)}
+              originalMatricule={membre.matricule}
               onSubmit={handleEdit}
               isPending={updateMutation.isPending}
               submitLabel="Enregistrer les modifications"

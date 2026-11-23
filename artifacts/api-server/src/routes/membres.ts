@@ -5,7 +5,7 @@ import crypto from "crypto";
 import { sendMail } from "../lib/mailer";
 import { eq, or, ilike, and, sql, desc, ne, isNull } from "drizzle-orm";
 import {
-  CreateMembreBody, ReplaceMembreBody, PatchMembreBody, UpdateMembreStatutBody,
+  CreateMembreBody, ReplaceMembreBody, PatchMembreBody, MATRICULE_CREATION_REGEX, UpdateMembreStatutBody,
   DeclarerDecesMembreBody, ListMembresQueryParams,
   GetMembreParams, UpdateMembreParams, UpdateMembreStatutParams,
   GetMembreCarenceParams, DeclarerDecesMembreParams, DeleteMembreParams,
@@ -154,10 +154,14 @@ function updateMembreHandler(mode: "put" | "patch") {
     if (!parsed.success) { res.status(400).json({ error: validationError(parsed.error as any) }); return; }
 
     const id = params.data.id;
-    const [existing] = await db.select({ id: membresTable.id }).from(membresTable).where(eq(membresTable.id, id));
+    const [existing] = await db.select({ id: membresTable.id, matricule: membresTable.matricule }).from(membresTable).where(eq(membresTable.id, id));
     if (!existing) { res.status(404).json({ error: "Membre introuvable" }); return; }
 
     const data = parsed.data as Record<string, unknown>;
+    if (typeof data.matricule === "string" && data.matricule !== existing.matricule && !MATRICULE_CREATION_REGEX.test(data.matricule)) {
+      res.status(400).json({ error: "Champ « matricule » invalide : lettres et chiffres uniquement (ex: 001 ou MG001)" });
+      return;
+    }
     const conflict = await findConflict(id, data as any);
     if (conflict) { res.status(409).json({ error: conflict }); return; }
 
