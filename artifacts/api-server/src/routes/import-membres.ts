@@ -30,6 +30,7 @@ const COLUMN_MAP: Record<string, string> = {
   "date adhesion": "dateAdhesion",
   "dateadhesion": "dateAdhesion",
   "date d'adhésion": "dateAdhesion",
+  "date d'adhesion": "dateAdhesion",
   statut: "statut",
   "type_adhesion": "typeAdhesion",
   "type adhesion": "typeAdhesion",
@@ -46,6 +47,20 @@ const COLUMN_MAP: Record<string, string> = {
   "renonciation_assistances": "renonciationAssistances",
   "renonciation assistances": "renonciationAssistances",
 };
+
+/** Clé sans accents, apostrophes typographiques ni espaces superflus (« Date d’Adhésion » → « date d'adhesion »). */
+function foldKey(k: string): string {
+  return k.replace(/^\uFEFF/, "").toLowerCase().trim()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/[’`´]/g, "'").replace(/\s+/g, " ");
+}
+const FOLDED_COLUMN_MAP: Record<string, string> = Object.fromEntries(
+  Object.entries(COLUMN_MAP).map(([k, v]) => [foldKey(k), v]),
+);
+/** Colonne reconnue : anciens en-têtes sans accents (« Prenom », « Date Adhesion ») et nouveaux (« Prénom », « Date d'adhésion »). */
+function mapColumn(key: string): string | undefined {
+  return COLUMN_MAP[key.toLowerCase().trim()] ?? FOLDED_COLUMN_MAP[foldKey(key)];
+}
 
 function parseBoolean(val: any): boolean {
   if (typeof val === "boolean") return val;
@@ -75,7 +90,7 @@ function parseDate(val: any): string | undefined {
 function normalizeRow(raw: Record<string, any>): Record<string, any> {
   const row: Record<string, any> = {};
   for (const [key, val] of Object.entries(raw)) {
-    const mapped = COLUMN_MAP[key.toLowerCase().trim()];
+    const mapped = mapColumn(key);
     if (mapped) row[mapped] = val;
   }
   return row;

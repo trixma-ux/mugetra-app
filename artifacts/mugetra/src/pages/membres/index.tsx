@@ -8,9 +8,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Plus, Search, FileDown, Upload } from "lucide-react";
 import { formatDate } from "@/lib/format";
+import { apiFetch } from "@/lib/api";
+import { downloadCsv } from "@/lib/csv";
+import { useToast } from "@/hooks/use-toast";
 
 export default function MembresList() {
   const [search, setSearch] = useState("");
+  const { toast } = useToast();
   const { data, isLoading } = useListMembres({ search }, { query: { queryKey: getListMembresQueryKey({ search }) } });
 
   const getStatusBadge = (status: MembreStatut) => {
@@ -25,18 +29,27 @@ export default function MembresList() {
     }
   };
 
-  const exportCSV = () => {
-    if (!data?.data) return;
-    const csvContent = "data:text/csv;charset=utf-8," 
-      + "Matricule,Nom,Prenom,Statut,Date Adhesion\n"
-      + data.data.map((e: any) => `${e.matricule},${e.nom},${e.prenom},${e.statut},${e.dateAdhesion}`).join("\n");
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "membres.csv");
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
+  const [exporting, setExporting] = useState(false);
+  /** Export CSV de TOUS les membres (pas seulement la page affichée), en-têtes accentués. */
+  const exportCSV = async () => {
+    setExporting(true);
+    try {
+      const all: any[] = [];
+      for (let page = 1; page <= 100; page++) {
+        const res = await apiFetch<any>(`/membres?limit=200&page=${page}${search ? `&search=${encodeURIComponent(search)}` : ""}`);
+        all.push(...(res?.data ?? []));
+        if (!res?.data?.length || all.length >= (res.total ?? 0)) break;
+      }
+      // Ces en-têtes sont reconnus par l'import de membres (anciens noms sans accents aussi).
+      downloadCsv("membres.csv",
+        ["Matricule", "Nom", "Prénom", "Statut", "Date d'adhésion", "Téléphone", "Email"],
+        all.map((e: any) => [e.matricule, e.nom, e.prenom, e.statut, e.dateAdhesion ?? "", e.telephone ?? "", e.email ?? ""]),
+      );
+    } catch (err: any) {
+      toast({ title: "Export impossible", description: err?.message ?? "Erreur réseau", variant: "destructive" });
+    } finally {
+      setExporting(false);
+    }
   };
 
   return (
@@ -47,7 +60,7 @@ export default function MembresList() {
           <p className="text-muted-foreground">Gérez les membres de la mutuelle.</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button variant="outline" onClick={exportCSV}><FileDown className="mr-2 h-4 w-4" /> Exporter</Button>
+          <Button variant="outline" onClick={exportCSV} disabled={exporting}><FileDown className="mr-2 h-4 w-4" /> {exporting ? "Export…" : "Exporter"}</Button>
           <Link href="/membres/import">
             <Button variant="outline"><Upload className="mr-2 h-4 w-4" /> Importer</Button>
           </Link>
