@@ -5,6 +5,7 @@ import fs from "fs";
 import { db, membresTable, cotisationsTable, assistancesTable, assistanceValidationsTable, usersTable, personnesDeclareeesTable } from "@workspace/db";
 import { eq, asc, desc } from "drizzle-orm";
 import { requireAuth } from "../lib/auth";
+import { formatModePaiement } from "../lib/mode-paiement";
 
 const router: IRouter = Router();
 
@@ -335,7 +336,7 @@ router.get("/pdf/cotisations/:membreId", requireAuth, async (req, res): Promise<
         String(c.annee),
         ffcfa(c.montant),
         fshort(c.datePaiement),
-        (c.modePaiement ?? "especes").replace(/_/g, " "),
+        formatModePaiement(c.modePaiement ?? "especes"),
       ])
     );
   }

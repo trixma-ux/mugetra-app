@@ -5,6 +5,7 @@ import { db, cotisationsTable, membresTable, parametresTable } from "@workspace/
 import { eq, and } from "drizzle-orm";
 import { requireAuth } from "../lib/auth";
 import type { JwtPayload } from "../lib/auth";
+import { MODE_PAIEMENT_LABELS, MODES_PAIEMENT_IMPORT, parseModePaiement } from "../lib/mode-paiement";
 
 const router: IRouter = Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
@@ -69,7 +70,7 @@ router.post("/cotisations/import-excel", requireAuth, upload.single("fichier"), 
   const annee = parseInt(req.body?.annee ?? req.query.annee as string);
   const mois = parseInt(req.body?.mois ?? req.query.mois as string);
   const datePaiement = req.body?.datePaiement ?? req.query.datePaiement ?? new Date().toISOString().slice(0, 10);
-  const modePaiement = req.body?.modePaiement ?? "especes";
+  const modePaiement = parseModePaiement(req.body?.modePaiement) ?? "especes";
 
   if (!annee || !mois || mois < 1 || mois > 12) {
     res.status(400).json({ error: "Paramètres annee et mois obligatoires (1-12)" });
@@ -215,7 +216,7 @@ router.post("/cotisations/import-arrieres", requireAuth, upload.single("fichier"
       await db.insert(cotisationsTable).values({
         membreId: membre.id, annee, mois, montant,
         datePaiement: parseDate(mapped.datePaiement) || new Date().toISOString().slice(0, 10),
-        modePaiement: mapped.modePaiement ? String(mapped.modePaiement) : "regularisation",
+        modePaiement: parseModePaiement(mapped.modePaiement) ?? "regularisation",
         note: mapped.note ? String(mapped.note) : undefined,
         createdById: user.userId,
       });
@@ -262,10 +263,10 @@ router.get("/cotisations/import/template-mensuel", requireAuth, async (_req, res
 /** GET /cotisations/import/template-arrieres */
 router.get("/cotisations/import/template-arrieres", requireAuth, async (_req, res): Promise<void> => {
   const examples = [
-    { matricule: "NPG-2024-001", annee: 2024, mois: 1, montant: 7500, mode_paiement: "regularisation", note: "Janvier 2024" },
-    { matricule: "NPG-2024-001", annee: 2024, mois: 2, montant: 7500, mode_paiement: "regularisation", note: "Février 2024" },
-    { matricule: "NPG-2024-002", annee: 2023, mois: 11, montant: 7500, mode_paiement: "virement", note: "" },
-    { matricule: "NPG-2024-002", annee: 2023, mois: 12, montant: 7500, mode_paiement: "virement", note: "" },
+    { matricule: "NPG-2024-001", annee: 2024, mois: 1, montant: 7500, mode_paiement: MODE_PAIEMENT_LABELS.regularisation, note: "Janvier 2024" },
+    { matricule: "NPG-2024-001", annee: 2024, mois: 2, montant: 7500, mode_paiement: MODE_PAIEMENT_LABELS.regularisation, note: "Février 2024" },
+    { matricule: "NPG-2024-002", annee: 2023, mois: 11, montant: 7500, mode_paiement: MODE_PAIEMENT_LABELS.especes, note: "" },
+    { matricule: "NPG-2024-002", annee: 2023, mois: 12, montant: 7500, mode_paiement: MODE_PAIEMENT_LABELS.virement, note: "" },
   ];
   const wb = XLSX.utils.book_new();
   const ws = XLSX.utils.json_to_sheet(examples, {
@@ -280,7 +281,7 @@ router.get("/cotisations/import/template-arrieres", requireAuth, async (_req, re
     ["UTILISATION:", "Chaque ligne représente un mois à régulariser pour un membre."],
     ["COLONNES OBLIGATOIRES:", "matricule, annee (ex: 2024), mois (1-12)"],
     ["COLONNES OPTIONNELLES:", "montant, mode_paiement, note"],
-    ["MODE PAIEMENT:", "especes | virement | cheque | regularisation"],
+    ["MODE PAIEMENT:", `${MODES_PAIEMENT_IMPORT} (sans accent accepté aussi)`],
     ["NOTE:", "Les entrées déjà existantes (même matricule + mois + année) seront ignorées."],
   ]);
   instr["!cols"] = [{ wch: 25 }, { wch: 55 }];
