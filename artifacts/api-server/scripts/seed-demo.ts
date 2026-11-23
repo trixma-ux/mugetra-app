@@ -5,7 +5,9 @@
  *   DATABASE_URL=... pnpm --filter @workspace/api-server run seed-demo
  *
  * - membres : upsert par matricule (contrainte unique) ;
- * - cotisations : une seule ligne par (membre, année, mois) — ignorée si elle existe déjà.
+ * - cotisations : une seule ligne par (membre, année, mois) — ignorée si elle existe déjà ;
+ * - mois en cours : payé seulement par les membres marqués `moisEnCours: true`
+ *   (prélèvements et virements déjà passés), daté du jour au plus tard le 28.
  * Les données réelles (matricules non DEMO-) ne sont jamais modifiées.
  */
 import { and, eq } from "drizzle-orm";
@@ -23,7 +25,9 @@ export function derniersMois(n: number, ref = new Date()): { annee: number; mois
 }
 
 async function main() {
-  const periodes = derniersMois(6);
+  const now = new Date();
+  const periodes = derniersMois(6, now);
+  const moisEnCours = { annee: now.getUTCFullYear(), mois: now.getUTCMonth() + 1 };
   let nMembres = 0;
   let nCotisations = 0;
   for (const m of data.membres) {
@@ -37,13 +41,15 @@ async function main() {
       .onConflictDoUpdate({ target: membresTable.matricule, set: update }).returning();
     nMembres++;
     // Les mois payés sont les plus anciens de la période (un défaillant a cessé de payer).
-    for (const { annee, mois } of periodes.slice(0, m.moisPayes)) {
+    const aPayer = periodes.slice(0, m.moisPayes).map(p => ({ ...p, jour: 28 }));
+    if ((m as { moisEnCours?: boolean }).moisEnCours) aPayer.push({ ...moisEnCours, jour: Math.min(28, now.getUTCDate()) });
+    for (const { annee, mois, jour } of aPayer) {
       const exists = await db.select({ id: cotisationsTable.id }).from(cotisationsTable)
         .where(and(eq(cotisationsTable.membreId, membre.id), eq(cotisationsTable.annee, annee), eq(cotisationsTable.mois, mois)));
       if (exists.length > 0) continue;
       await db.insert(cotisationsTable).values({
         membreId: membre.id, annee, mois, montant: data.cotisationMensuelle,
-        datePaiement: `${annee}-${String(mois).padStart(2, "0")}-28`, modePaiement: m.mode, note: "Démo",
+        datePaiement: `${annee}-${String(mois).padStart(2, "0")}-${String(jour).padStart(2, "0")}`, modePaiement: m.mode, note: "Démo",
       });
       nCotisations++;
     }
