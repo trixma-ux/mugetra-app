@@ -155,7 +155,9 @@ Connexion ensuite avec `POST /api/auth/login` (`{ "email", "motDePasse" }`) ou l
 
 Seed idempotent : 8 membres **fictifs** (matricules `DEMO-001` à `DEMO-008`, numéros
 `+225 07000001xx` non attribués) et leurs cotisations (7 500 FCFA) des 6 derniers mois clos
-— dont un membre défaillant (2 mois payés) et un en retard (4 mois). Relancer le script ne
+— dont un membre défaillant (2 mois payés) et un en retard (4 mois) — plus le mois en cours pour
+5 membres (`moisEnCours: true` : DEMO-001, 002, 004, 006, 008 ; DEMO-003 paie en espèces et n'est
+pas encore passé). Relancer le script ne
 crée pas de doublons (upsert par matricule, une cotisation par membre/année/mois) et ne touche
 jamais aux membres réels. Données : `artifacts/api-server/scripts/seed-data.json`.
 
