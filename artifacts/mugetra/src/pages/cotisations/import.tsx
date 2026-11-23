@@ -10,7 +10,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { ArrowLeft, Upload, FileSpreadsheet, Download, Plus, Trash2, CheckCircle2, XCircle, AlertCircle, Loader2, Calendar, History } from "lucide-react";
-import { formatFCFA } from "@/lib/format";
+import { formatFCFA, formatModePaiement } from "@/lib/format";
 import { API_ORIGIN } from "@/lib/config";
 
 const token = () => localStorage.getItem("mugetra_token") ?? "";
@@ -257,7 +257,7 @@ export default function ImportCotisations() {
           <Button variant="ghost" size="sm"><ArrowLeft className="mr-2 h-4 w-4" />Retour</Button>
         </Link>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Import de cotisations</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Import de cotisations</h1>
           <p className="text-muted-foreground">Enregistrez plusieurs cotisations en une seule opération.</p>
         </div>
       </div>
@@ -308,7 +308,7 @@ export default function ImportCotisations() {
                   <Label>Mode de paiement</Label>
                   <Select value={modeMensuel} onValueChange={setModeMensuel}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>{MODES.map(m => <SelectItem key={m} value={m} className="capitalize">{m.replace("_", " ")}</SelectItem>)}</SelectContent>
+                    <SelectContent>{MODES.map(m => <SelectItem key={m} value={m} >{formatModePaiement(m)}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
               </div>
@@ -429,7 +429,7 @@ export default function ImportCotisations() {
                         <TableCell>
                           <Select value={row.modePaiement} onValueChange={v => setRowsArriere(r => r.map(x => x.id === row.id ? { ...x, modePaiement: v } : x))}>
                             <SelectTrigger className="h-8 text-sm w-32"><SelectValue /></SelectTrigger>
-                            <SelectContent>{MODES.map(m => <SelectItem key={m} value={m} className="capitalize">{m.replace("_", " ")}</SelectItem>)}</SelectContent>
+                            <SelectContent>{MODES.map(m => <SelectItem key={m} value={m} >{formatModePaiement(m)}</SelectItem>)}</SelectContent>
                           </Select>
                         </TableCell>
                         <TableCell><Input value={row.note} onChange={e => setRowsArriere(r => r.map(x => x.id === row.id ? { ...x, note: e.target.value } : x))} placeholder="..." className="h-8 text-sm" /></TableCell>

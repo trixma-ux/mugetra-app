@@ -27,3 +27,18 @@ export function formatDateTime(dateString: string | undefined | null): string {
     minute: "2-digit",
   }).format(new Date(dateString));
 }
+
+/** Libellés d'affichage des modes de paiement (la valeur stockée reste « especes », etc.). */
+export const MODE_PAIEMENT_LABELS: Record<string, string> = {
+  especes: "Espèces",
+  virement: "Virement",
+  cheque: "Chèque",
+  mobile_money: "Mobile Money",
+  prelevement: "Prélèvement",
+  regularisation: "Régularisation",
+};
+
+export function formatModePaiement(mode: string | undefined | null): string {
+  if (!mode) return "-";
+  return MODE_PAIEMENT_LABELS[mode] ?? mode.replace(/_/g, " ");
+}

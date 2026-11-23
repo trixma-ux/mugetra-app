@@ -21,7 +21,7 @@ export default function CommunicationsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Communication</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Communication</h1>
         <p className="text-muted-foreground">Envois groupés SMS, WhatsApp et Email vers les mutualistes.</p>
       </div>
 

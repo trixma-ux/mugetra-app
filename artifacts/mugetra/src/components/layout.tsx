@@ -95,7 +95,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const NavLinks = () => (
     <>
       <div className="flex items-center justify-center px-4 py-5">
-        <img src={publicAsset("logo-mugetra.png")} alt="MUGETRA" className="h-10 object-contain" style={{ filter: "brightness(0) invert(1)" }} />
+        {/* Logo couleur sur fond clair : posé sur une pastille blanche plutôt qu'inversé (le filtre en faisait un pavé blanc) */}
+        <div className="rounded-md bg-white px-3 py-1.5 shadow-sm">
+          <img src={publicAsset("logo-mugetra.png")} alt="MUGETRA" className="h-9 object-contain" />
+        </div>
       </div>
       <nav className="flex-1 space-y-1 px-3 py-4 overflow-y-auto">
         {navSections.map((section, si) => (
@@ -149,7 +152,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <div className="flex-1 flex flex-col min-w-0">
         <header className="md:hidden flex items-center justify-between p-4 bg-sidebar text-sidebar-foreground">
           <div className="flex items-center gap-2">
-            <img src={publicAsset("logo-mugetra.png")} alt="MUGETRA" className="h-7 object-contain" style={{ filter: "brightness(0) invert(1)" }} />
+            <div className="rounded bg-white px-2 py-1">
+              <img src={publicAsset("logo-mugetra.png")} alt="MUGETRA" className="h-6 object-contain" />
+            </div>
           </div>
           <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
             <SheetTrigger asChild>

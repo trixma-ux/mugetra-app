@@ -39,7 +39,7 @@ export default function NouveauMembre() {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Nouveau Membre</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Nouveau Membre</h1>
           <p className="text-muted-foreground">Ajouter un nouveau membre à la mutuelle.</p>
         </div>
       </div>

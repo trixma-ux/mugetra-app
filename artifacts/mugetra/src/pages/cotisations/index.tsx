@@ -5,16 +5,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Upload } from "lucide-react";
-import { formatFCFA, formatDate } from "@/lib/format";
+import { formatFCFA, formatDate, formatModePaiement } from "@/lib/format";
 
 export default function CotisationsList() {
   const { data, isLoading } = useListCotisations({}, { query: { queryKey: getListCotisationsQueryKey({}) } });
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Cotisations</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Cotisations</h1>
           <p className="text-muted-foreground">Historique des cotisations.</p>
         </div>
         <Link href="/cotisations/import">
@@ -47,7 +47,7 @@ export default function CotisationsList() {
                       <TableCell>{cot.mois}/{cot.annee}</TableCell>
                       <TableCell className="font-medium text-green-600">+{formatFCFA(cot.montant)}</TableCell>
                       <TableCell>{formatDate(cot.dateReglement)}</TableCell>
-                      <TableCell className="capitalize">{cot.typeReglement}</TableCell>
+                      <TableCell>{formatModePaiement(cot.typeReglement)}</TableCell>
                     </TableRow>
                   ))
                 )}

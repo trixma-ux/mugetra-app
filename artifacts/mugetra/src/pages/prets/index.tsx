@@ -40,9 +40,9 @@ export default function PretsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Prêts</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Prêts</h1>
           <p className="text-muted-foreground">Prêts sans intérêt aux membres actifs — plafond 500 000 FCFA, remboursable en 20 mois maximum avec différé de 3 mois (Art. 57 R.I.).</p>
         </div>
         <Dialog open={open} onOpenChange={setOpen}>

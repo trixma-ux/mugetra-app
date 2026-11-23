@@ -43,9 +43,9 @@ export default function DocumentsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Gestion documentaire</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Gestion documentaire</h1>
           <p className="text-muted-foreground">Archivage numérique des statuts, PV, rapports, courriers, décisions et contrats.</p>
         </div>
         <Dialog open={open} onOpenChange={setOpen}>

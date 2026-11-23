@@ -137,7 +137,7 @@ export default function ImportMembres() {
           <Button variant="ghost" size="sm"><ArrowLeft className="mr-2 h-4 w-4" />Retour</Button>
         </Link>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Import de mutualistes</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Import de mutualistes</h1>
           <p className="text-muted-foreground">Ajoutez plusieurs membres en une seule opération.</p>
         </div>
       </div>

@@ -40,7 +40,7 @@ export default function RetraiteComplementairePage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Retraite complémentaire</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Retraite complémentaire</h1>
         <p className="text-muted-foreground">Régime facultatif — cotisation minimum 2 500 FCFA par tranche, rachat partiel possible après 60 mois (max 50% du capital acquis).</p>
       </div>
 

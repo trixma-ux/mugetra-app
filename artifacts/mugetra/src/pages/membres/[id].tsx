@@ -219,7 +219,7 @@ export default function MembreDetail() {
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">{membre.prenom} {membre.nom}</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{membre.prenom} {membre.nom}</h1>
             <p className="text-muted-foreground font-mono">{membre.matricule}</p>
           </div>
         </div>

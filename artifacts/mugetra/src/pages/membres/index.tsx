@@ -41,12 +41,12 @@ export default function MembresList() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Membres</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Membres</h1>
           <p className="text-muted-foreground">Gérez les membres de la mutuelle.</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button variant="outline" onClick={exportCSV}><FileDown className="mr-2 h-4 w-4" /> Exporter</Button>
           <Link href="/membres/import">
             <Button variant="outline"><Upload className="mr-2 h-4 w-4" /> Importer</Button>
@@ -65,12 +65,37 @@ export default function MembresList() {
               placeholder="Rechercher par nom, matricule..." 
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="max-w-sm"
+              className="w-full sm:max-w-sm"
             />
           </div>
         </CardHeader>
         <CardContent>
-          <div className="rounded-md border">
+          {/* Mobile (< md) : une carte par membre, plus lisible qu'un tableau à 5 colonnes */}
+          <div className="md:hidden space-y-3">
+            {isLoading ? (
+              <p className="text-center text-sm text-muted-foreground py-4">Chargement...</p>
+            ) : !data?.data.length ? (
+              <p className="text-center text-sm text-muted-foreground py-4">Aucun membre trouvé</p>
+            ) : (
+              data.data.map((membre: any) => (
+                <Link key={membre.id} href={`/membres/${membre.id}`}>
+                  <div className="rounded-md border p-3 space-y-1 cursor-pointer hover:bg-muted/50" data-testid={`card-membre-${membre.id}`}>
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="font-medium truncate">{membre.nom} {membre.prenom}</p>
+                        <p className="text-sm text-primary">{membre.matricule}</p>
+                      </div>
+                      <div className="shrink-0">{getStatusBadge(membre.statut)}</div>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      <span className="capitalize">{membre.typeAdhesion?.replace(/_/g, " ")}</span> · Adhésion : {formatDate(membre.dateAdhesion)}
+                    </p>
+                  </div>
+                </Link>
+              ))
+            )}
+          </div>
+          <div className="hidden md:block rounded-md border">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -94,7 +119,7 @@ export default function MembresList() {
                       </TableCell>
                       <TableCell>{membre.nom} {membre.prenom}</TableCell>
                       <TableCell>{getStatusBadge(membre.statut)}</TableCell>
-                      <TableCell className="capitalize">{membre.typeAdhesion.replace("_", " ")}</TableCell>
+                      <TableCell className="capitalize">{membre.typeAdhesion?.replace(/_/g, " ")}</TableCell>
                       <TableCell>{formatDate(membre.dateAdhesion)}</TableCell>
                     </TableRow>
                   ))
