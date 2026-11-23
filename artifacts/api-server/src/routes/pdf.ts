@@ -69,7 +69,9 @@ function fshort(d?: string | null): string {
 }
 
 function ffcfa(n?: number | null): string {
-  return (n ?? 0).toLocaleString("fr-FR") + " FCFA";
+  // Les polices standard PDF (WinAnsi) n'ont pas l'espace fine insécable (U+202F) :
+  // elle s'affichait « 7 /500 FCFA ». On la remplace par une espace normale.
+  return (n ?? 0).toLocaleString("fr-FR").replace(/[\u202f\u00a0]/g, " ") + " FCFA";
 }
 
 function capitalize(s: string): string {
