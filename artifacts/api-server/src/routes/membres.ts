@@ -122,7 +122,15 @@ function validationError(err: { issues: { path: (string | number)[]; message: st
   if (!issue) return "Données invalides";
   if (issue.code === "unrecognized_keys") return `Champ(s) non modifiable(s) : ${(issue.keys ?? []).join(", ")}`;
   const champ = issue.path.join(".");
-  return champ ? `Champ « ${champ} » invalide : ${issue.message}` : issue.message;
+  const i = issue as any;
+  let msg = issue.message;
+  if (i.code === "invalid_type" && i.received === "undefined") msg = "champ requis";
+  else if (i.code === "invalid_type") msg = "type de valeur incorrect";
+  else if (i.code === "invalid_string" && i.validation === "email") msg = "adresse email invalide";
+  else if (i.code === "invalid_string" && i.validation === "regex") msg = "format invalide";
+  else if (i.code === "too_small") msg = "champ requis";
+  else if (i.code === "invalid_enum_value") msg = `valeur non autorisée (${(i.options ?? []).join(", ")})`;
+  return champ ? `Champ « ${champ} » invalide : ${msg}` : msg;
 }
 
 /** Vérifie qu'aucun AUTRE membre n'utilise déjà ce matricule ou ce téléphone. */
@@ -158,12 +166,12 @@ function updateMembreHandler(mode: "put" | "patch") {
     if (!existing) { res.status(404).json({ error: "Membre introuvable" }); return; }
 
     const data = parsed.data as Record<string, unknown>;
+    const conflict = await findConflict(id, data as any);
+    if (conflict) { res.status(409).json({ error: conflict }); return; }
     if (typeof data.matricule === "string" && data.matricule !== existing.matricule && !MATRICULE_CREATION_REGEX.test(data.matricule)) {
       res.status(400).json({ error: "Champ « matricule » invalide : lettres et chiffres uniquement (ex: 001 ou MG001)" });
       return;
     }
-    const conflict = await findConflict(id, data as any);
-    if (conflict) { res.status(409).json({ error: conflict }); return; }
 
     try {
       const [updated] = await db.update(membresTable).set(data as any).where(eq(membresTable.id, id)).returning();
