@@ -3,8 +3,25 @@ import { getGetDashboardStatsQueryKey, getGetCotisationsMensuellesQueryKey, getG
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, UserMinus, UserCheck, Activity, Wallet, TrendingUp, AlertCircle, Calendar } from "lucide-react";
 import { formatFCFA, formatDateTime } from "@/lib/format";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { Skeleton } from "@/components/ui/skeleton";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+
+const NB_MOIS_GRAPHIQUE = 6;
+
+/** Infobulle du graphique : montant encaissé (somme), nombre de payants (un nombre), attendu et taux. */
+function ChartTooltip({ active, payload }: { active?: boolean; payload?: any[] }) {
+  if (!active || !payload?.length) return null;
+  const d = payload[0].payload;
+  return (
+    <div className="rounded-md border bg-background p-3 text-xs shadow-md space-y-1">
+      <p className="font-semibold">{d.label}</p>
+      <p>Encaissé : <strong>{formatFCFA(d.montant)}</strong></p>
+      <p>Attendu : {formatFCFA(d.montantAttendu)}</p>
+      <p>Payants : {d.nombrePayants} / {d.nombreAttendus} membres</p>
+      <p>Recouvrement : {d.tauxRecouvrement} %</p>
+    </div>
+  );
+}
 
 function StatCard({ title, value, icon: Icon, description, isLoading }: any) {
   return (
@@ -31,7 +48,7 @@ function StatCard({ title, value, icon: Icon, description, isLoading }: any) {
 
 export default function Dashboard() {
   const { data: stats, isLoading: statsLoading } = useGetDashboardStats({ query: { queryKey: getGetDashboardStatsQueryKey() } });
-  const { data: cotisationsChart, isLoading: chartLoading } = useGetCotisationsMensuelles({ query: { queryKey: getGetCotisationsMensuellesQueryKey() } });
+  const { data: cotisationsChart, isLoading: chartLoading } = useGetCotisationsMensuelles({ query: { queryKey: getGetCotisationsMensuellesQueryKey(NB_MOIS_GRAPHIQUE) } }, NB_MOIS_GRAPHIQUE);
   const { data: tresorerie, isLoading: tresoLoading } = useGetTresorerieResume({ query: { queryKey: getGetTresorerieResumeQueryKey() } });
   const { data: activite, isLoading: actLoading } = useGetActiviteRecente({ query: { queryKey: getGetActiviteRecenteQueryKey() } });
 
@@ -52,10 +69,10 @@ export default function Dashboard() {
         />
         <StatCard
           title="Cotisations du mois"
-          value={formatFCFA(stats?.cotisationsDuMois)}
+          value={formatFCFA(stats?.cotisationsCollectees ?? 0)}
           icon={Wallet}
           isLoading={statsLoading}
-          description={`${stats?.tauxRecouvrement || 0}% de recouvrement`}
+          description={`${stats?.nombrePayants ?? 0} / ${stats?.nombreAttendus ?? 0} membres à jour · ${stats?.tauxRecouvrement ?? 0} % de recouvrement (attendu ${formatFCFA(stats?.montantAttendu ?? 0)})`}
         />
         <StatCard
           title="Membres Défaillants"
@@ -74,7 +91,7 @@ export default function Dashboard() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
         <Card className="col-span-4">
           <CardHeader>
-            <CardTitle>Évolution des cotisations</CardTitle>
+            <CardTitle>Évolution des cotisations ({NB_MOIS_GRAPHIQUE} derniers mois)</CardTitle>
           </CardHeader>
           <CardContent className="h-[300px]">
             {chartLoading ? (
@@ -84,9 +101,12 @@ export default function Dashboard() {
                 <BarChart data={cotisationsChart}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
                   <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{fontSize: 12}} />
-                  <YAxis axisLine={false} tickLine={false} tick={{fontSize: 12}} tickFormatter={(val) => `${val / 1000}k`} />
-                  <Tooltip formatter={(value: number) => [formatFCFA(value), "Montant"]} cursor={{fill: 'var(--color-muted)'}} />
-                  <Bar dataKey="montant" fill="var(--color-primary)" radius={[4, 4, 0, 0]} />
+                  <YAxis axisLine={false} tickLine={false} tick={{fontSize: 12}} width={70}
+                    tickFormatter={(val: number) => `${new Intl.NumberFormat("fr-FR").format(val).replace(/[\u202f\u00a0]/g, " ")} F`} />
+                  <Tooltip content={<ChartTooltip />} cursor={{fill: 'var(--color-muted)'}} />
+                  <Legend wrapperStyle={{ fontSize: 12 }} />
+                  <Bar dataKey="montantAttendu" name="Attendu" fill="var(--color-muted-foreground)" fillOpacity={0.25} radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="montant" name="Encaissé" fill="var(--color-primary)" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             )}

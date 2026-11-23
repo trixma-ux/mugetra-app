@@ -144,13 +144,14 @@ export function useGetCotisationsResume(membreId?: number | string, opts?: Query
     ...opts?.query,
   });
 }
-export function getGetCotisationsMensuellesQueryKey() {
-  return ["/dashboard/cotisations-mensuelles"] as const;
+export function getGetCotisationsMensuellesQueryKey(nbMois?: number) {
+  return nbMois ? (["/dashboard/cotisations-mensuelles", nbMois] as const) : (["/dashboard/cotisations-mensuelles"] as const);
 }
-export function useGetCotisationsMensuelles(opts?: QueryOpts<any>) {
+/** nbMois : nombre de mois affichés (défaut serveur : 12). */
+export function useGetCotisationsMensuelles(opts?: QueryOpts<any>, nbMois?: number) {
   return useQuery({
-    queryKey: getGetCotisationsMensuellesQueryKey(),
-    queryFn: () => apiFetch("/dashboard/cotisations-mensuelles"),
+    queryKey: getGetCotisationsMensuellesQueryKey(nbMois),
+    queryFn: () => apiFetch(`/dashboard/cotisations-mensuelles${nbMois ? `?mois=${nbMois}` : ""}`),
     ...opts?.query,
   });
 }
